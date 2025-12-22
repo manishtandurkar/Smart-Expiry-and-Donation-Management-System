@@ -15,6 +15,17 @@ const api = axios.create({
 });
 
 // ============================================================================
+// Auth API
+// ============================================================================
+
+export const authAPI = {
+  login: (username, password) => api.post('/api/auth/login', { username, password }),
+  register: (userData) => api.post('/api/auth/register', userData),
+  getUsers: (role) => api.get('/api/auth/users', { params: role ? { role } : {} }),
+  deleteUser: (userId) => api.delete(`/api/auth/users/${userId}`),
+};
+
+// ============================================================================
 // Donors API
 // ============================================================================
 
@@ -86,6 +97,18 @@ export const statsAPI = {
 // ============================================================================
 export const adminAPI = {
   login: (username, password) => api.post('/api/admin/login', { username, password }),
+};
+
+// ============================================================================
+// Donation Requests API
+// ============================================================================
+export const requestsAPI = {
+  getAll: (params) => api.get('/api/requests', { params }),
+  getByReceiver: (receiverId, status) => api.get(`/api/requests/receiver/${receiverId}`, { params: status ? { status } : {} }),
+  getApproved: (receiverId) => api.get(`/api/requests/approved/${receiverId}`),
+  create: (data) => api.post('/api/requests', data),
+  update: (requestId, data) => api.put(`/api/requests/${requestId}`, data),
+  delete: (requestId) => api.delete(`/api/requests/${requestId}`),
 };
 
 export default api;

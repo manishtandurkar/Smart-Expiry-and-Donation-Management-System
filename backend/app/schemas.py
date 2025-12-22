@@ -27,6 +27,59 @@ class ExpiryStatus(str, Enum):
     EXPIRED = "EXPIRED"
 
 
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    DONOR = "donor"
+    RECEIVER = "receiver"
+
+
+class RequestStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+class RequestType(str, Enum):
+    EXISTING = "existing"
+    NEW = "new"
+
+
+# ============================================================================
+# User Schemas
+# ============================================================================
+
+class UserBase(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    name: str = Field(..., min_length=1, max_length=100)
+    role: UserRole
+    contact: Optional[str] = None
+    address: Optional[str] = None
+
+
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=4)
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class UserResponse(UserBase):
+    user_id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class UserWithToken(BaseModel):
+    user: UserResponse
+    donor_id: Optional[int] = None
+    receiver_id: Optional[int] = None
+
+
 # ============================================================================
 # Donor Schemas
 # ============================================================================
@@ -274,3 +327,44 @@ class MessageResponse(BaseModel):
     message: str
     success: bool = True
     data: Optional[dict] = None
+
+
+# ============================================================================
+# Donation Request Schemas
+# ============================================================================
+
+class DonationRequestBase(BaseModel):
+    item_id: Optional[int] = None
+    item_name: Optional[str] = None
+    quantity: int = Field(..., gt=0)
+    request_type: RequestType = RequestType.EXISTING
+    notes: Optional[str] = None
+
+
+class DonationRequestCreate(DonationRequestBase):
+    receiver_id: int = Field(..., gt=0)
+
+
+class DonationRequestUpdate(BaseModel):
+    status: RequestStatus
+    admin_notes: Optional[str] = None
+
+
+class DonationRequestResponse(DonationRequestBase):
+    request_id: int
+    receiver_id: int
+    status: RequestStatus
+    admin_notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    receiver: Optional[ReceiverResponse] = None
+    item: Optional[ItemSummary] = None
+    
+    @validator('item', pre=True)
+    def convert_item(cls, v):
+        if v and hasattr(v, 'category'):
+            return ItemSummary.from_orm_item(v)
+        return v
+    
+    class Config:
+        from_attributes = True

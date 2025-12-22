@@ -13,6 +13,28 @@ from datetime import datetime, date
 from .database import Base
 
 
+class User(Base):
+    """
+    User model - Stores authentication info with role-based access.
+    Roles: admin, donor, receiver
+    """
+    __tablename__ = "User"
+    
+    user_id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(50), nullable=False, unique=True)
+    password = Column(String(255), nullable=False)
+    role = Column(Enum('admin', 'donor', 'receiver', name='role_enum'), nullable=False)
+    name = Column(String(100), nullable=False)
+    contact = Column(String(15))
+    address = Column(Text)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<User(id={self.user_id}, username='{self.username}', role='{self.role}')>"
+
+
 class Donor(Base):
     """
     Donor model - Stores information about donors.
@@ -21,6 +43,7 @@ class Donor(Base):
     __tablename__ = "Donor"
     
     donor_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('User.user_id', ondelete='SET NULL'), nullable=True)
     name = Column(String(100), nullable=False)
     contact = Column(String(15), nullable=False, unique=True)
     address = Column(Text)
@@ -105,6 +128,7 @@ class Receiver(Base):
     __tablename__ = "Receiver"
     
     receiver_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('User.user_id', ondelete='SET NULL'), nullable=True)
     name = Column(String(100), nullable=False)
     contact = Column(String(15), nullable=False, unique=True)
     address = Column(Text)
@@ -114,6 +138,8 @@ class Receiver(Base):
     
     # Relationship: One receiver can have multiple donations
     donations = relationship("Donation", back_populates="receiver")
+    # Relationship: One receiver can have multiple donation requests
+    donation_requests = relationship("DonationRequest", back_populates="receiver")
     
     def __repr__(self):
         return f"<Receiver(id={self.receiver_id}, name='{self.name}')>"
@@ -177,3 +203,41 @@ class Alert(Base):
     
     def __repr__(self):
         return f"<Alert(id={self.alert_id}, severity='{self.severity}')>"
+
+
+class DonationRequest(Base):
+    """
+    DonationRequest model - Stores donation requests from receivers.
+    Status: pending, approved, rejected
+    """
+    __tablename__ = "DonationRequest"
+    
+    request_id = Column(Integer, primary_key=True, autoincrement=True)
+    receiver_id = Column(Integer, ForeignKey('Receiver.receiver_id', ondelete='CASCADE'), nullable=False)
+    item_id = Column(Integer, ForeignKey('Item.item_id', ondelete='SET NULL'), nullable=True)
+    item_name = Column(String(100))  # For new item requests
+    quantity = Column(Integer, nullable=False)
+    request_type = Column(
+        Enum('existing', 'new', name='request_type_enum'),
+        default='existing'
+    )
+    notes = Column(Text)
+    status = Column(
+        Enum('pending', 'approved', 'rejected', name='request_status_enum'),
+        default='pending'
+    )
+    admin_notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Constraints
+    __table_args__ = (
+        CheckConstraint('quantity > 0', name='chk_request_quantity'),
+    )
+    
+    # Relationships
+    receiver = relationship("Receiver", back_populates="donation_requests")
+    item = relationship("Item")
+    
+    def __repr__(self):
+        return f"<DonationRequest(id={self.request_id}, status='{self.status}')>"

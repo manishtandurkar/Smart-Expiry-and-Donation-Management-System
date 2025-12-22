@@ -1,3 +1,17 @@
+/* App Loading */
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.loading-spinner {
+  color: white;
+  font-size: 1.5rem;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -15,8 +29,6 @@ body {
 
 .app {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
 .navbar {

@@ -8,19 +8,43 @@ CREATE DATABASE expiry_donation_db;
 USE expiry_donation_db;
 
 -- ============================================================================
+-- TABLE: User
+-- Description: Stores user authentication info with role-based access
+-- Roles: admin, donor, receiver
+-- ============================================================================
+CREATE TABLE User (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'donor', 'receiver') NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    contact VARCHAR(15),
+    address TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_user_role (role),
+    INDEX idx_user_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
 -- TABLE: Donor
 -- Description: Stores information about donors who contribute items
 -- Normalization: 3NF - No transitive dependencies, all attributes depend on PK
 -- ============================================================================
 CREATE TABLE Donor (
     donor_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
     name VARCHAR(100) NOT NULL,
     contact VARCHAR(15) NOT NULL,
     address TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_contact (contact),
-    INDEX idx_donor_name (name)
+    INDEX idx_donor_name (name),
+    CONSTRAINT fk_donor_user FOREIGN KEY (user_id) 
+        REFERENCES User(user_id) 
+        ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
@@ -65,6 +89,7 @@ CREATE TABLE Item (
 -- ============================================================================
 CREATE TABLE Receiver (
     receiver_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
     name VARCHAR(100) NOT NULL,
     contact VARCHAR(15) NOT NULL,
     address TEXT,
@@ -73,7 +98,10 @@ CREATE TABLE Receiver (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_receiver_contact (contact),
     INDEX idx_receiver_name (name),
-    INDEX idx_receiver_region (region)
+    INDEX idx_receiver_region (region),
+    CONSTRAINT fk_receiver_user FOREIGN KEY (user_id) 
+        REFERENCES User(user_id) 
+        ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
@@ -143,6 +171,38 @@ CREATE TABLE Alert (
     INDEX idx_alert_item (item_id),
     INDEX idx_alert_severity (severity),
     INDEX idx_alert_acknowledged (is_acknowledged)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- TABLE: DonationRequest
+-- Description: Stores donation requests from receivers pending admin approval
+-- Status: pending, approved, rejected
+-- ============================================================================
+CREATE TABLE DonationRequest (
+    request_id INT AUTO_INCREMENT PRIMARY KEY,
+    receiver_id INT NOT NULL,
+    item_id INT,
+    item_name VARCHAR(100),
+    quantity INT NOT NULL,
+    request_type ENUM('existing', 'new') NOT NULL DEFAULT 'existing',
+    notes TEXT,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    admin_notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_request_receiver FOREIGN KEY (receiver_id) 
+        REFERENCES Receiver(receiver_id) 
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_request_item FOREIGN KEY (item_id) 
+        REFERENCES Item(item_id) 
+        ON DELETE SET NULL ON UPDATE CASCADE,
+    
+    CONSTRAINT chk_request_quantity CHECK (quantity > 0),
+    
+    INDEX idx_request_status (status),
+    INDEX idx_request_receiver (receiver_id),
+    INDEX idx_request_date (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
@@ -279,19 +339,37 @@ DELIMITER ;
 -- SAMPLE DATA: For testing and demonstration
 -- ============================================================================
 
--- Insert Donors
-INSERT INTO Donor (name, contact, address) VALUES
-('Green Valley Farm', '9876543210', '123 Farm Road, Rural District'),
-('City Medical Store', '9876543211', '456 Health Plaza, Urban Center'),
-('Fashion Hub', '9876543212', '789 Style Street, Shopping Mall'),
-('Community Center', '9876543213', '321 Community Lane, Downtown');
+-- Insert default admin user (password: admin)
+INSERT INTO User (username, password, role, name, contact) VALUES
+('admin', 'admin', 'admin', 'System Admin', '0000000000');
 
--- Insert Receivers
-INSERT INTO Receiver (name, contact, address, region) VALUES
-('Hope Orphanage', '8765432101', '111 Care Street, North Zone', 'North Region'),
-('Senior Citizens Home', '8765432102', '222 Elder Avenue, East Zone', 'East Region'),
-('Disaster Relief Camp', '8765432103', '333 Emergency Road, South Zone', 'South Region'),
-('Homeless Shelter', '8765432104', '444 Support Boulevard, West Zone', 'West Region');
+-- Insert sample donor users (username and password are the same)
+INSERT INTO User (username, password, role, name, contact, address) VALUES
+('greenvalleyfarm', 'greenvalleyfarm', 'donor', 'Green Valley Farm', '9876543210', '123 Farm Road, Rural District'),
+('citymedicalstore', 'citymedicalstore', 'donor', 'City Medical Store', '9876543211', '456 Health Plaza, Urban Center'),
+('fashionhub', 'fashionhub', 'donor', 'Fashion Hub', '9876543212', '789 Style Street, Shopping Mall'),
+('communitycenter', 'communitycenter', 'donor', 'Community Center', '9876543213', '321 Community Lane, Downtown');
+
+-- Insert sample receiver users (username and password are the same)
+INSERT INTO User (username, password, role, name, contact, address) VALUES
+('hopeorphanage', 'hopeorphanage', 'receiver', 'Hope Orphanage', '8765432101', '111 Care Street, North Zone'),
+('seniorcitizensh', 'seniorcitizensh', 'receiver', 'Senior Citizens Home', '8765432102', '222 Elder Avenue, East Zone'),
+('disasterrelief', 'disasterrelief', 'receiver', 'Disaster Relief Camp', '8765432103', '333 Emergency Road, South Zone'),
+('homelessshelter', 'homelessshelter', 'receiver', 'Homeless Shelter', '8765432104', '444 Support Boulevard, West Zone');
+
+-- Insert Donors (linked to users)
+INSERT INTO Donor (user_id, name, contact, address) VALUES
+(2, 'Green Valley Farm', '9876543210', '123 Farm Road, Rural District'),
+(3, 'City Medical Store', '9876543211', '456 Health Plaza, Urban Center'),
+(4, 'Fashion Hub', '9876543212', '789 Style Street, Shopping Mall'),
+(5, 'Community Center', '9876543213', '321 Community Lane, Downtown');
+
+-- Insert Receivers (linked to users)
+INSERT INTO Receiver (user_id, name, contact, address, region) VALUES
+(6, 'Hope Orphanage', '8765432101', '111 Care Street, North Zone', 'North Region'),
+(7, 'Senior Citizens Home', '8765432102', '222 Elder Avenue, East Zone', 'East Region'),
+(8, 'Disaster Relief Camp', '8765432103', '333 Emergency Road, South Zone', 'South Region'),
+(9, 'Homeless Shelter', '8765432104', '444 Support Boulevard, West Zone', 'West Region');
 
 -- Insert Items
 INSERT INTO Item (name, quantity, expiry_date, description, storage_condition, category, donor_id) VALUES

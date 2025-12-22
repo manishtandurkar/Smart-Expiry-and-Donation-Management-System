@@ -294,3 +294,133 @@ def get_dashboard_stats(db: Session) -> schemas.DashboardStats:
         expired_items=expired_items or 0,
         low_stock_items=low_stock_items or 0
     )
+
+
+# ============================================================================
+# User CRUD
+# ============================================================================
+
+def get_users(db: Session, role: Optional[str] = None, skip: int = 0, limit: int = 100) -> List[models.User]:
+    query = db.query(models.User)
+    if role:
+        query = query.filter(models.User.role == role)
+    return query.offset(skip).limit(limit).all()
+
+
+def get_user(db: Session, user_id: int) -> Optional[models.User]:
+    return db.query(models.User).filter(models.User.user_id == user_id).first()
+
+
+def get_user_by_username(db: Session, username: str) -> Optional[models.User]:
+    return db.query(models.User).filter(models.User.username == username).first()
+
+
+def create_user(db: Session, user: schemas.UserCreate) -> models.User:
+    db_user = models.User(**user.model_dump())
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def delete_user(db: Session, user_id: int) -> bool:
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return False
+    db.delete(db_user)
+    db.commit()
+    return True
+
+
+def get_donor_by_user_id(db: Session, user_id: int) -> Optional[models.Donor]:
+    return db.query(models.Donor).filter(models.Donor.user_id == user_id).first()
+
+
+def get_receiver_by_user_id(db: Session, user_id: int) -> Optional[models.Receiver]:
+    return db.query(models.Receiver).filter(models.Receiver.user_id == user_id).first()
+
+
+def create_donor_with_user(db: Session, donor: schemas.DonorCreate, user_id: int) -> models.Donor:
+    db_donor = models.Donor(**donor.model_dump(), user_id=user_id)
+    db.add(db_donor)
+    db.commit()
+    db.refresh(db_donor)
+    return db_donor
+
+
+def create_receiver_with_user(db: Session, receiver: schemas.ReceiverCreate, user_id: int) -> models.Receiver:
+    db_receiver = models.Receiver(**receiver.model_dump(), user_id=user_id)
+    db.add(db_receiver)
+    db.commit()
+    db.refresh(db_receiver)
+    return db_receiver
+
+
+# ============================================================================
+# Donation Request CRUD
+# ============================================================================
+
+def get_donation_requests(
+    db: Session,
+    status: Optional[str] = None,
+    receiver_id: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 100
+) -> List[models.DonationRequest]:
+    query = db.query(models.DonationRequest).options(
+        joinedload(models.DonationRequest.receiver),
+        joinedload(models.DonationRequest.item)
+    )
+    
+    if status:
+        query = query.filter(models.DonationRequest.status == status)
+    if receiver_id:
+        query = query.filter(models.DonationRequest.receiver_id == receiver_id)
+    
+    return query.order_by(models.DonationRequest.created_at.desc()).offset(skip).limit(limit).all()
+
+
+def get_donation_request(db: Session, request_id: int) -> Optional[models.DonationRequest]:
+    return db.query(models.DonationRequest).options(
+        joinedload(models.DonationRequest.receiver),
+        joinedload(models.DonationRequest.item)
+    ).filter(models.DonationRequest.request_id == request_id).first()
+
+
+def create_donation_request(db: Session, request: schemas.DonationRequestCreate) -> models.DonationRequest:
+    db_request = models.DonationRequest(**request.model_dump())
+    db.add(db_request)
+    db.commit()
+    db.refresh(db_request)
+    
+    # Reload with relationships
+    return get_donation_request(db, db_request.request_id)
+
+
+def update_donation_request(
+    db: Session,
+    request_id: int,
+    update_data: schemas.DonationRequestUpdate
+) -> Optional[models.DonationRequest]:
+    db_request = db.query(models.DonationRequest).filter(
+        models.DonationRequest.request_id == request_id
+    ).first()
+    
+    if db_request:
+        for key, value in update_data.model_dump(exclude_unset=True).items():
+            setattr(db_request, key, value)
+        db.commit()
+        db.refresh(db_request)
+        return get_donation_request(db, request_id)
+    return None
+
+
+def delete_donation_request(db: Session, request_id: int) -> bool:
+    db_request = db.query(models.DonationRequest).filter(
+        models.DonationRequest.request_id == request_id
+    ).first()
+    if not db_request:
+        return False
+    db.delete(db_request)
+    db.commit()
+    return True
