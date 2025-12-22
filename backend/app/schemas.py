@@ -57,32 +57,6 @@ class DonorResponse(DonorBase):
 
 
 # ============================================================================
-# Category Schemas
-# ============================================================================
-
-class CategoryBase(BaseModel):
-    category_name: str = Field(..., min_length=1, max_length=50)
-    description: Optional[str] = None
-
-
-class CategoryCreate(CategoryBase):
-    pass
-
-
-class CategoryUpdate(BaseModel):
-    category_name: Optional[str] = Field(None, min_length=1, max_length=50)
-    description: Optional[str] = None
-
-
-class CategoryResponse(CategoryBase):
-    category_id: int
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
-
-
-# ============================================================================
 # Item Schemas
 # ============================================================================
 
@@ -92,14 +66,8 @@ class ItemBase(BaseModel):
     expiry_date: date
     description: Optional[str] = None
     storage_condition: Optional[str] = Field(None, max_length=100)
-    category_id: int = Field(..., gt=0)
+    category: Optional[str] = Field(None, max_length=50)
     donor_id: int = Field(..., gt=0)
-    
-    @validator('expiry_date')
-    def expiry_must_be_future(cls, v):
-        if v < date.today():
-            raise ValueError('Expiry date must be in the future or today')
-        return v
 
 
 class ItemCreate(ItemBase):
@@ -113,7 +81,7 @@ class ItemUpdate(BaseModel):
     expiry_date: Optional[date] = None
     description: Optional[str] = None
     storage_condition: Optional[str] = Field(None, max_length=100)
-    category_id: Optional[int] = Field(None, gt=0)
+    category: Optional[str] = Field(None, max_length=50)
 
 
 class ItemResponse(ItemBase):
@@ -124,7 +92,6 @@ class ItemResponse(ItemBase):
     expiry_status: str
     
     # Nested relationships
-    category: CategoryResponse
     donor: DonorResponse
     
     class Config:
@@ -139,7 +106,7 @@ class ItemSummary(BaseModel):
     expiry_date: date
     days_until_expiry: int
     expiry_status: str
-    category_name: str
+    category_name: Optional[str]
     
     @classmethod
     def from_orm_item(cls, item):
@@ -151,7 +118,7 @@ class ItemSummary(BaseModel):
             expiry_date=item.expiry_date,
             days_until_expiry=item.days_until_expiry,
             expiry_status=item.expiry_status,
-            category_name=item.category.category_name if item.category else "Unknown"
+            category_name=item.category if item.category else "Unknown"
         )
     
     class Config:
@@ -166,7 +133,7 @@ class ReceiverBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     contact: str = Field(..., pattern=r'^\d{10,15}$')
     address: Optional[str] = None
-    organization_type: Optional[str] = Field(None, max_length=50)
+    region: Optional[str] = Field(None, max_length=100)
 
 
 class ReceiverCreate(ReceiverBase):
@@ -177,7 +144,7 @@ class ReceiverUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     contact: Optional[str] = Field(None, pattern=r'^\d{10,15}$')
     address: Optional[str] = None
-    organization_type: Optional[str] = Field(None, max_length=50)
+    region: Optional[str] = Field(None, max_length=100)
 
 
 class ReceiverResponse(ReceiverBase):
@@ -196,8 +163,11 @@ class ReceiverResponse(ReceiverBase):
 class DonationBase(BaseModel):
     item_id: int = Field(..., gt=0)
     receiver_id: int = Field(..., gt=0)
+    donor_id: Optional[int] = Field(None, gt=0)
     quantity: int = Field(..., gt=0)
     donation_date: Optional[date] = Field(default_factory=date.today)
+    delivery_mode: Optional[str] = Field(None, max_length=50)
+    delivered_by: Optional[str] = Field(None, max_length=100)
     notes: Optional[str] = None
 
 

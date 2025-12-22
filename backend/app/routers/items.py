@@ -16,12 +16,12 @@ router = APIRouter(prefix="/api/items", tags=["Items"])
 def list_items(
     skip: int = 0,
     limit: int = 100,
-    category_id: Optional[int] = None,
+    category: Optional[str] = None,
     donor_id: Optional[int] = None,
     db: Session = Depends(get_db)
 ):
     """Get list of all items with optional filters."""
-    return crud.get_items(db, skip=skip, limit=limit, category_id=category_id, donor_id=donor_id)
+    return crud.get_items(db, skip=skip, limit=limit, category=category, donor_id=donor_id)
 
 
 @router.get("/expiring", response_model=List[schemas.ItemResponse])
@@ -52,19 +52,16 @@ def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
     Predicts category automatically using the item name (primary signal).
     """
     # NLP: Predict category from item name if category not provided
-    if not item.category_id:
-        categories = crud.get_categories(db)
-        category_names = [c.category_name for c in categories]
-
+    if not item.category and (item.name or item.description):
+        # Common categories
+        category_names = ["Food", "Medicine", "Clothing", "Hygiene", "Stationery", "Electronics"]
+        
         # Use name as the main signal; fall back to description if name missing
         text_for_prediction = item.name or item.description or ""
         predicted_name, confidence = predict_item_category(text_for_prediction, category_names)
-
-        # Find category ID
-        for cat in categories:
-            if cat.category_name == predicted_name:
-                item.category_id = cat.category_id
-                break
+        
+        # Set predicted category
+        item.category = predicted_name
     
     return crud.create_item(db, item)
 
@@ -77,8 +74,7 @@ def predict_category(name: str, db: Session = Depends(get_db)):
     if not name or not name.strip():
         raise HTTPException(status_code=400, detail="Item name is required")
     
-    categories = crud.get_categories(db)
-    category_names = [c.category_name for c in categories]
+    category_names = ["Food", "Medicine", "Clothing", "Hygiene", "Stationery", "Electronics"]
     
     predicted_name, confidence = predict_item_category(name, category_names)
     

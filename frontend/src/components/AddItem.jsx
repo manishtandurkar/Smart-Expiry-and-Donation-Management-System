@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { itemsAPI, categoriesAPI, donorsAPI } from '../services/api';
+import { itemsAPI, donorsAPI } from '../services/api';
 import './AddItem.css';
 
 function AddItem() {
@@ -9,29 +9,20 @@ function AddItem() {
     expiry_date: '',
     description: '',
     storage_condition: '',
-    category_id: '',
+    category: '',
     donor_id: '',
   });
 
-  const [categories, setCategories] = useState([]);
   const [donors, setDonors] = useState([]);
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [predicting, setPredicting] = useState(false);
 
+  const categories = ["Food", "Medicine", "Clothing", "Hygiene", "Stationery", "Electronics"];
+
   useEffect(() => {
-    fetchCategories();
     fetchDonors();
   }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await categoriesAPI.getAll();
-      setCategories(response.data);
-    } catch (err) {
-      console.error('Failed to fetch categories', err);
-    }
-  };
 
   const fetchDonors = async () => {
     try {
@@ -61,12 +52,7 @@ function AddItem() {
       setPrediction(response.data);
       
       // Auto-select predicted category
-      const predictedCat = categories.find(
-        c => c.category_name === response.data.predicted_category
-      );
-      if (predictedCat) {
-        setFormData({ ...formData, category_id: predictedCat.category_id });
-      }
+      setFormData({ ...formData, category: response.data.predicted_category });
     } catch (err) {
       console.error('Prediction failed', err);
     } finally {
@@ -82,7 +68,6 @@ function AddItem() {
       const data = {
         ...formData,
         quantity: parseInt(formData.quantity),
-        category_id: parseInt(formData.category_id),
         donor_id: parseInt(formData.donor_id),
       };
 
@@ -96,7 +81,7 @@ function AddItem() {
         expiry_date: '',
         description: '',
         storage_condition: '',
-        category_id: '',
+        category: '',
         donor_id: '',
       });
       setPrediction(null);
@@ -192,15 +177,15 @@ function AddItem() {
           <div className="form-group">
             <label>Category *</label>
             <select
-              name="category_id"
-              value={formData.category_id}
+              name="category"
+              value={formData.category}
               onChange={handleChange}
               required
             >
               <option value="">Select Category</option>
               {categories.map(cat => (
-                <option key={cat.category_id} value={cat.category_id}>
-                  {cat.category_name}
+                <option key={cat} value={cat}>
+                  {cat}
                 </option>
               ))}
             </select>

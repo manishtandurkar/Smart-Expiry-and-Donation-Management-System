@@ -12,7 +12,7 @@ import logging
 from .config import settings
 from .database import init_db, close_db_connections, get_db
 from . import crud, schemas
-from .routers import donors, categories, items, receivers, donations, alerts, admin
+from .routers import donors, items, receivers, donations, alerts, admin
 
 # Configure logging
 logging.basicConfig(
@@ -69,7 +69,6 @@ app.add_middleware(
 # ============================================================================
 
 app.include_router(donors.router)
-app.include_router(categories.router)
 app.include_router(items.router)
 app.include_router(receivers.router)
 app.include_router(donations.router)

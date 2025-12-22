@@ -31,18 +31,21 @@ function Alerts() {
       });
 
       // Normalize both sources to a common shape and merge
-      const normalizedMysql = mysqlList.map(a => ({
-        source: 'mysql',
-        id: a.alert_id,
-        item_name: a.item?.name || a.item_name || 'Unknown',
-        message: a.message,
-        severity: a.severity,
-        datetime: a.created_at || a.alert_date,
-        quantity: a.item?.quantity ?? null,
-        category_name: a.item?.category_name || (a.item && a.item.category ? a.item.category.category_name : null),
-        days_until_expiry: a.item?.days_until_expiry ?? null,
-        raw: a
-      }));
+      // Filter MySQL alerts to ensure item has quantity > 0
+      const normalizedMysql = mysqlList
+        .filter(a => a.item && a.item.quantity > 0)
+        .map(a => ({
+          source: 'mysql',
+          id: a.alert_id,
+          item_name: a.item?.name || a.item_name || 'Unknown',
+          message: a.message,
+          severity: a.severity,
+          datetime: a.created_at || a.alert_date,
+          quantity: a.item?.quantity ?? null,
+          category_name: a.item?.category || a.item?.category_name || null,
+          days_until_expiry: a.item?.days_until_expiry ?? null,
+          raw: a
+        }));
 
       const normalizedMongo = filteredMongo.map((m, idx) => ({
         source: 'mongo',

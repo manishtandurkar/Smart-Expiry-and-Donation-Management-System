@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { donationsAPI, itemsAPI, receiversAPI } from '../services/api';
+import { donationsAPI, itemsAPI, receiversAPI, donorsAPI } from '../services/api';
 import './RecordDonation.css';
 
 function RecordDonation() {
   const [formData, setFormData] = useState({
     item_id: '',
     receiver_id: '',
+    donor_id: '',
     quantity: '',
+    delivery_mode: '',
+    delivered_by: '',
     notes: '',
   });
 
   const [items, setItems] = useState([]);
   const [receivers, setReceivers] = useState([]);
+  const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -20,12 +24,14 @@ function RecordDonation() {
 
   const fetchData = async () => {
     try {
-      const [itemsRes, receiversRes] = await Promise.all([
+      const [itemsRes, receiversRes, donorsRes] = await Promise.all([
         itemsAPI.getAll(),
         receiversAPI.getAll(),
+        donorsAPI.getAll(),
       ]);
       setItems(itemsRes.data);
       setReceivers(receiversRes.data);
+      setDonors(donorsRes.data);
     } catch (err) {
       console.error(err);
     }
@@ -44,10 +50,13 @@ function RecordDonation() {
     try {
       setLoading(true);
       const data = {
-        ...formData,
         item_id: parseInt(formData.item_id),
         receiver_id: parseInt(formData.receiver_id),
+        donor_id: formData.donor_id ? parseInt(formData.donor_id) : null,
         quantity: parseInt(formData.quantity),
+        delivery_mode: formData.delivery_mode || null,
+        delivered_by: formData.delivered_by || null,
+        notes: formData.notes || null,
       };
 
       await donationsAPI.create(data);
@@ -56,7 +65,10 @@ function RecordDonation() {
       setFormData({
         item_id: '',
         receiver_id: '',
+        donor_id: '',
         quantity: '',
+        delivery_mode: '',
+        delivered_by: '',
         notes: '',
       });
       fetchData(); // Refresh items
@@ -92,7 +104,7 @@ function RecordDonation() {
           {selectedItem && (
             <div className="item-info">
               Expiry: {new Date(selectedItem.expiry_date).toLocaleDateString()} | 
-              Category: {selectedItem.category.category_name}
+              Category: {selectedItem.category || 'N/A'}
             </div>
           )}
         </div>
@@ -108,7 +120,23 @@ function RecordDonation() {
             <option value="">Choose a receiver</option>
             {receivers.map(receiver => (
               <option key={receiver.receiver_id} value={receiver.receiver_id}>
-                {receiver.name} ({receiver.organization_type})
+                {receiver.name} ({receiver.region || 'No region'})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Approving Donor (Optional)</label>
+          <select
+            name="donor_id"
+            value={formData.donor_id}
+            onChange={handleChange}
+          >
+            <option value="">Select approving donor (optional)</option>
+            {donors.map(donor => (
+              <option key={donor.donor_id} value={donor.donor_id}>
+                {donor.name}
               </option>
             ))}
           </select>
@@ -126,6 +154,30 @@ function RecordDonation() {
             max={selectedItem?.quantity || undefined}
             placeholder="Enter quantity"
           />
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Delivery Mode</label>
+            <input
+              type="text"
+              name="delivery_mode"
+              value={formData.delivery_mode}
+              onChange={handleChange}
+              placeholder="e.g., Pickup, Courier, Self-delivery"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Delivered By</label>
+            <input
+              type="text"
+              name="delivered_by"
+              value={formData.delivered_by}
+              onChange={handleChange}
+              placeholder="Person or service name"
+            />
+          </div>
         </div>
 
         <div className="form-group">

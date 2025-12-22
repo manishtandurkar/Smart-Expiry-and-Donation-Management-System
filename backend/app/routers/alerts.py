@@ -20,23 +20,36 @@ def list_alerts(
     acknowledged: Optional[bool] = None,
     db: Session = Depends(get_db)
 ):
-    """Get alerts from MySQL with item details."""
-    return crud.get_alerts(db, skip=skip, limit=limit, acknowledged=acknowledged)
+    """Get alerts from MySQL with item details. Only shows alerts for items in inventory (quantity > 0)."""
+    alerts = crud.get_alerts(db, skip=skip, limit=limit, acknowledged=acknowledged)
+    # Additional filter to ensure item has quantity > 0
+    return [alert for alert in alerts if alert.item and alert.item.quantity > 0]
 
 
 @router.get("/mongo")
-def list_mongo_alerts(skip: int = 0, limit: int = 100):
+def list_mongo_alerts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
-    Get alerts from MongoDB.
-    Demonstrates NoSQL integration for log data.
+    Get alerts from MongoDB, filtered by current inventory status.
+    Only returns alerts for items that still have quantity > 0.
     """
+    from ..models import Item
+    
     alerts = get_mongo_alerts(limit=limit, skip=skip)
-    total = get_mongo_alert_count()
+    
+    # Filter alerts to only include items currently in inventory
+    filtered_alerts = []
+    for alert in alerts:
+        item_id = alert.get('item_id')
+        if item_id:
+            # Check if item still exists and has quantity > 0
+            item = db.query(Item).filter(Item.item_id == item_id).first()
+            if item and item.quantity > 0:
+                filtered_alerts.append(alert)
     
     return {
-        "total": total,
-        "count": len(alerts),
-        "alerts": alerts
+        "total": len(filtered_alerts),
+        "count": len(filtered_alerts),
+        "alerts": filtered_alerts
     }
 
 

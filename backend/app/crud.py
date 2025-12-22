@@ -52,30 +52,6 @@ def delete_donor(db: Session, donor_id: int) -> bool:
 
 
 # ============================================================================
-# Category CRUD
-# ============================================================================
-
-def get_categories(db: Session) -> List[models.Category]:
-    return db.query(models.Category).all()
-
-
-def get_category(db: Session, category_id: int) -> Optional[models.Category]:
-    return db.query(models.Category).filter(models.Category.category_id == category_id).first()
-
-
-def get_category_by_name(db: Session, name: str) -> Optional[models.Category]:
-    return db.query(models.Category).filter(models.Category.category_name == name).first()
-
-
-def create_category(db: Session, category: schemas.CategoryCreate) -> models.Category:
-    db_category = models.Category(**category.model_dump())
-    db.add(db_category)
-    db.commit()
-    db.refresh(db_category)
-    return db_category
-
-
-# ============================================================================
 # Item CRUD
 # ============================================================================
 
@@ -83,19 +59,18 @@ def get_items(
     db: Session, 
     skip: int = 0, 
     limit: int = 100,
-    category_id: Optional[int] = None,
+    category: Optional[str] = None,
     donor_id: Optional[int] = None
 ) -> List[models.Item]:
     query = db.query(models.Item).options(
-        joinedload(models.Item.category),
         joinedload(models.Item.donor)
     )
     
     # Only show items with quantity > 0 in inventory
     query = query.filter(models.Item.quantity > 0)
     
-    if category_id:
-        query = query.filter(models.Item.category_id == category_id)
+    if category:
+        query = query.filter(models.Item.category == category)
     if donor_id:
         query = query.filter(models.Item.donor_id == donor_id)
     
@@ -104,7 +79,6 @@ def get_items(
 
 def get_item(db: Session, item_id: int) -> Optional[models.Item]:
     return db.query(models.Item).options(
-        joinedload(models.Item.category),
         joinedload(models.Item.donor)
     ).filter(models.Item.item_id == item_id).first()
 
@@ -133,7 +107,6 @@ def get_expiring_items(db: Session, days: int = 30) -> List[models.Item]:
     """Get items expiring within specified days."""
     threshold_date = date.today() + timedelta(days=days)
     return db.query(models.Item).options(
-        joinedload(models.Item.category),
         joinedload(models.Item.donor)
     ).filter(
         and_(
@@ -147,7 +120,6 @@ def get_expiring_items(db: Session, days: int = 30) -> List[models.Item]:
 def get_expired_items(db: Session) -> List[models.Item]:
     """Get expired items."""
     return db.query(models.Item).options(
-        joinedload(models.Item.category),
         joinedload(models.Item.donor)
     ).filter(
         and_(
@@ -193,9 +165,9 @@ def delete_receiver(db: Session, receiver_id: int) -> bool:
 
 def get_donations(db: Session, skip: int = 0, limit: int = 100) -> List[models.Donation]:
     return db.query(models.Donation).options(
-        joinedload(models.Donation.item).joinedload(models.Item.category),
         joinedload(models.Donation.item).joinedload(models.Item.donor),
-        joinedload(models.Donation.receiver)
+        joinedload(models.Donation.receiver),
+        joinedload(models.Donation.approving_donor)
     ).order_by(models.Donation.created_at.desc()).offset(skip).limit(limit).all()
 
 
@@ -225,9 +197,9 @@ def create_donation(db: Session, donation: schemas.DonationCreate) -> models.Don
     
     # Reload with relationships for response validation
     db_donation = db.query(models.Donation).options(
-        joinedload(models.Donation.item).joinedload(models.Item.category),
         joinedload(models.Donation.item).joinedload(models.Item.donor),
-        joinedload(models.Donation.receiver)
+        joinedload(models.Donation.receiver),
+        joinedload(models.Donation.approving_donor)
     ).filter(models.Donation.donation_id == db_donation.donation_id).first()
     
     return db_donation
@@ -244,7 +216,6 @@ def get_alerts(
     acknowledged: Optional[bool] = None
 ) -> List[models.Alert]:
     query = db.query(models.Alert).options(
-        joinedload(models.Alert.item).joinedload(models.Item.category),
         joinedload(models.Alert.item).joinedload(models.Item.donor)
     )
 

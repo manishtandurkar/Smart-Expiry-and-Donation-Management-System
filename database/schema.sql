@@ -24,24 +24,11 @@ CREATE TABLE Donor (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
--- TABLE: Category
--- Description: Classification of items (e.g., Food, Medicine, Clothing)
--- Normalization: 3NF - Independent entity with no redundancy
--- ============================================================================
-CREATE TABLE Category (
-    category_id INT AUTO_INCREMENT PRIMARY KEY,
-    category_name VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_category_name (category_name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================================================
 -- TABLE: Item
 -- Description: Inventory items with expiry tracking
 -- Normalization: 3NF
---   - category_id FK references Category (1-M relationship)
 --   - donor_id FK references Donor (1-M relationship)
+--   - category stored as attribute (as per ER diagram)
 --   - All non-key attributes depend solely on item_id
 -- ============================================================================
 CREATE TABLE Item (
@@ -51,26 +38,22 @@ CREATE TABLE Item (
     expiry_date DATE NOT NULL,
     description TEXT,
     storage_condition VARCHAR(100),
-    category_id INT NOT NULL,
+    category VARCHAR(50),
     donor_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     -- Foreign Key Constraints
-    CONSTRAINT fk_item_category FOREIGN KEY (category_id) 
-        REFERENCES Category(category_id) 
-        ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_item_donor FOREIGN KEY (donor_id) 
         REFERENCES Donor(donor_id) 
         ON DELETE RESTRICT ON UPDATE CASCADE,
     
     -- Business Constraints
     CONSTRAINT chk_quantity CHECK (quantity >= 0),
-    CONSTRAINT chk_expiry_date CHECK (expiry_date >= created_at),
     
     -- Indexes for Performance
     INDEX idx_item_expiry (expiry_date),
-    INDEX idx_item_category (category_id),
+    INDEX idx_item_category (category),
     INDEX idx_item_donor (donor_id),
     INDEX idx_item_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -85,27 +68,31 @@ CREATE TABLE Receiver (
     name VARCHAR(100) NOT NULL,
     contact VARCHAR(15) NOT NULL,
     address TEXT,
-    organization_type VARCHAR(50),
+    region VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_receiver_contact (contact),
-    INDEX idx_receiver_name (name)
+    INDEX idx_receiver_name (name),
+    INDEX idx_receiver_region (region)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
 -- TABLE: Donation
 -- Description: Records of items donated to receivers
 -- Normalization: 3NF
---   - item_id FK references Item (1-M relationship)
+--   - item_id FK references Item (M-N relationship via junction table)
 --   - receiver_id FK references Receiver (1-M relationship)
---   - Represents many-to-many relationship between Item and Receiver
+--   - donor_id FK references Donor (N-N relationship for approvals)
 -- ============================================================================
 CREATE TABLE Donation (
     donation_id INT AUTO_INCREMENT PRIMARY KEY,
     item_id INT NOT NULL,
     receiver_id INT NOT NULL,
+    donor_id INT,
     quantity INT NOT NULL,
     donation_date DATE NOT NULL DEFAULT (CURRENT_DATE),
+    delivery_mode VARCHAR(50),
+    delivered_by VARCHAR(100),
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
@@ -116,6 +103,9 @@ CREATE TABLE Donation (
     CONSTRAINT fk_donation_receiver FOREIGN KEY (receiver_id) 
         REFERENCES Receiver(receiver_id) 
         ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_donation_donor FOREIGN KEY (donor_id) 
+        REFERENCES Donor(donor_id) 
+        ON DELETE SET NULL ON UPDATE CASCADE,
     
     -- Business Constraints
     CONSTRAINT chk_donation_quantity CHECK (quantity > 0),
@@ -123,7 +113,8 @@ CREATE TABLE Donation (
     -- Indexes for Performance
     INDEX idx_donation_date (donation_date),
     INDEX idx_donation_item (item_id),
-    INDEX idx_donation_receiver (receiver_id)
+    INDEX idx_donation_receiver (receiver_id),
+    INDEX idx_donation_donor (donor_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
@@ -167,7 +158,7 @@ SELECT
     i.expiry_date,
     i.description,
     i.storage_condition,
-    c.category_name,
+    i.category AS category_name,
     d.name AS donor_name,
     d.contact AS donor_contact,
     DATEDIFF(i.expiry_date, CURDATE()) AS days_until_expiry,
@@ -178,7 +169,6 @@ SELECT
         ELSE 'SAFE'
     END AS expiry_status
 FROM Item i
-INNER JOIN Category c ON i.category_id = c.category_id
 INNER JOIN Donor d ON i.donor_id = d.donor_id;
 
 -- View: Donation history with full details
@@ -187,17 +177,20 @@ SELECT
     don.donation_id,
     don.donation_date,
     don.quantity AS donated_quantity,
+    don.delivery_mode,
+    don.delivered_by,
     i.name AS item_name,
-    c.category_name,
+    i.category AS category_name,
     r.name AS receiver_name,
-    r.organization_type,
+    r.region,
     d.name AS donor_name,
+    approver.name AS approved_by_donor,
     don.notes
 FROM Donation don
 INNER JOIN Item i ON don.item_id = i.item_id
-INNER JOIN Category c ON i.category_id = c.category_id
 INNER JOIN Receiver r ON don.receiver_id = r.receiver_id
-INNER JOIN Donor d ON i.donor_id = d.donor_id;
+INNER JOIN Donor d ON i.donor_id = d.donor_id
+LEFT JOIN Donor approver ON don.donor_id = approver.donor_id;
 
 -- View: Active alerts with item details
 CREATE VIEW vw_active_alerts AS
@@ -209,11 +202,10 @@ SELECT
     i.name AS item_name,
     i.quantity,
     i.expiry_date,
-    c.category_name,
+    i.category AS category_name,
     DATEDIFF(i.expiry_date, CURDATE()) AS days_remaining
 FROM Alert a
 INNER JOIN Item i ON a.item_id = i.item_id
-INNER JOIN Category c ON i.category_id = c.category_id
 WHERE a.is_acknowledged = FALSE
 ORDER BY a.severity DESC, a.alert_date DESC;
 
@@ -287,14 +279,6 @@ DELIMITER ;
 -- SAMPLE DATA: For testing and demonstration
 -- ============================================================================
 
--- Insert Categories
-INSERT INTO Category (category_name, description) VALUES
-('Food', 'Perishable and non-perishable food items'),
-('Medicine', 'Pharmaceutical products and medical supplies'),
-('Clothing', 'Garments and textile products'),
-('Hygiene', 'Personal care and hygiene products'),
-('Stationery', 'Educational and office supplies');
-
 -- Insert Donors
 INSERT INTO Donor (name, contact, address) VALUES
 ('Green Valley Farm', '9876543210', '123 Farm Road, Rural District'),
@@ -303,32 +287,32 @@ INSERT INTO Donor (name, contact, address) VALUES
 ('Community Center', '9876543213', '321 Community Lane, Downtown');
 
 -- Insert Receivers
-INSERT INTO Receiver (name, contact, address, organization_type) VALUES
-('Hope Orphanage', '8765432101', '111 Care Street, North Zone', 'NGO'),
-('Senior Citizens Home', '8765432102', '222 Elder Avenue, East Zone', 'NGO'),
-('Disaster Relief Camp', '8765432103', '333 Emergency Road, South Zone', 'Government'),
-('Homeless Shelter', '8765432104', '444 Support Boulevard, West Zone', 'NGO');
+INSERT INTO Receiver (name, contact, address, region) VALUES
+('Hope Orphanage', '8765432101', '111 Care Street, North Zone', 'North Region'),
+('Senior Citizens Home', '8765432102', '222 Elder Avenue, East Zone', 'East Region'),
+('Disaster Relief Camp', '8765432103', '333 Emergency Road, South Zone', 'South Region'),
+('Homeless Shelter', '8765432104', '444 Support Boulevard, West Zone', 'West Region');
 
 -- Insert Items
-INSERT INTO Item (name, quantity, expiry_date, description, storage_condition, category_id, donor_id) VALUES
+INSERT INTO Item (name, quantity, expiry_date, description, storage_condition, category, donor_id) VALUES
 -- Food items
-('Rice Bags', 100, DATE_ADD(CURDATE(), INTERVAL 90 DAY), 'Premium quality basmati rice', 'Cool and dry place', 1, 1),
-('Wheat Flour', 50, DATE_ADD(CURDATE(), INTERVAL 60 DAY), 'Whole wheat flour', 'Cool and dry place', 1, 1),
-('Canned Beans', 200, DATE_ADD(CURDATE(), INTERVAL 180 DAY), 'Protein-rich canned beans', 'Room temperature', 1, 1),
-('Milk Powder', 30, DATE_ADD(CURDATE(), INTERVAL 5 DAY), 'Full cream milk powder', 'Refrigerated', 1, 1),
+('Rice Bags', 100, DATE_ADD(CURDATE(), INTERVAL 90 DAY), 'Premium quality basmati rice', 'Cool and dry place', 'Food', 1),
+('Wheat Flour', 50, DATE_ADD(CURDATE(), INTERVAL 60 DAY), 'Whole wheat flour', 'Cool and dry place', 'Food', 1),
+('Canned Beans', 200, DATE_ADD(CURDATE(), INTERVAL 180 DAY), 'Protein-rich canned beans', 'Room temperature', 'Food', 1),
+('Milk Powder', 30, DATE_ADD(CURDATE(), INTERVAL 5 DAY), 'Full cream milk powder', 'Refrigerated', 'Food', 1),
 
 -- Medicine items
-('Paracetamol Tablets', 500, DATE_ADD(CURDATE(), INTERVAL 120 DAY), '500mg tablets for fever', 'Store below 25°C', 2, 2),
-('Antibiotic Syrup', 100, DATE_ADD(CURDATE(), INTERVAL 10 DAY), 'Amoxicillin suspension', 'Refrigerate after opening', 2, 2),
-('Bandages', 300, DATE_ADD(CURDATE(), INTERVAL 365 DAY), 'Sterile cotton bandages', 'Dry place', 2, 2),
+('Paracetamol Tablets', 500, DATE_ADD(CURDATE(), INTERVAL 120 DAY), '500mg tablets for fever', 'Store below 25°C', 'Medicine', 2),
+('Antibiotic Syrup', 100, DATE_ADD(CURDATE(), INTERVAL 10 DAY), 'Amoxicillin suspension', 'Refrigerate after opening', 'Medicine', 2),
+('Bandages', 300, DATE_ADD(CURDATE(), INTERVAL 365 DAY), 'Sterile cotton bandages', 'Dry place', 'Medicine', 2),
 
 -- Clothing items
-('Winter Jackets', 75, DATE_ADD(CURDATE(), INTERVAL 730 DAY), 'Warm winter jackets for adults', 'Dry storage', 3, 3),
-('Children Shirts', 120, DATE_ADD(CURDATE(), INTERVAL 730 DAY), 'Cotton shirts for children', 'Dry storage', 3, 3),
+('Winter Jackets', 75, DATE_ADD(CURDATE(), INTERVAL 730 DAY), 'Warm winter jackets for adults', 'Dry storage', 'Clothing', 3),
+('Children Shirts', 120, DATE_ADD(CURDATE(), INTERVAL 730 DAY), 'Cotton shirts for children', 'Dry storage', 'Clothing', 3),
 
 -- Hygiene items
-('Hand Sanitizer', 200, DATE_ADD(CURDATE(), INTERVAL 8 DAY), 'Alcohol-based sanitizer', 'Cool place', 4, 4),
-('Soap Bars', 400, DATE_ADD(CURDATE(), INTERVAL 400 DAY), 'Antibacterial soap bars', 'Dry place', 4, 4);
+('Hand Sanitizer', 200, DATE_ADD(CURDATE(), INTERVAL 8 DAY), 'Alcohol-based sanitizer', 'Cool place', 'Hygiene', 4),
+('Soap Bars', 400, DATE_ADD(CURDATE(), INTERVAL 400 DAY), 'Antibacterial soap bars', 'Dry place', 'Hygiene', 4);
 
 -- ============================================================================
 -- DATABASE STATISTICS
@@ -336,7 +320,6 @@ INSERT INTO Item (name, quantity, expiry_date, description, storage_condition, c
 SELECT 
     'Database Created Successfully' AS Status,
     DATABASE() AS Database_Name,
-    (SELECT COUNT(*) FROM Category) AS Categories,
     (SELECT COUNT(*) FROM Donor) AS Donors,
     (SELECT COUNT(*) FROM Receiver) AS Receivers,
     (SELECT COUNT(*) FROM Item) AS Items,

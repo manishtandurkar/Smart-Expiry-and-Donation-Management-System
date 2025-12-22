@@ -68,7 +68,7 @@ function Inventory() {
               <tr key={item.item_id}>
                 <td>{item.item_id}</td>
                 <td><strong>{item.name}</strong></td>
-                <td>{item.category.category_name}</td>
+                <td>{item.category || 'N/A'}</td>
                 <td>{item.quantity}</td>
                 <td>{new Date(item.expiry_date).toLocaleDateString()}</td>
                 <td>{item.days_until_expiry}</td>
