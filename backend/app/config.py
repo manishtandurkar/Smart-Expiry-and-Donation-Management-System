@@ -40,11 +40,19 @@ class Settings(BaseSettings):
         """Get database URL - supports both PostgreSQL and MySQL."""
         if self.DATABASE_URL:
             # If using PostgreSQL, ensure we use psycopg3 dialect
-            if self.DATABASE_URL.startswith('postgresql://'):
-                return self.DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
-            elif self.DATABASE_URL.startswith('postgres://'):
-                return self.DATABASE_URL.replace('postgres://', 'postgresql+psycopg://', 1)
-            return self.DATABASE_URL
+            url = self.DATABASE_URL
+            if url.startswith('postgresql://'):
+                url = url.replace('postgresql://', 'postgresql+psycopg://', 1)
+            elif url.startswith('postgres://'):
+                url = url.replace('postgres://', 'postgresql+psycopg://', 1)
+            
+            # For Supabase pooler, ensure we're using the correct connection mode
+            if 'supabase' in url and '?' not in url:
+                url += '?sslmode=require'
+            elif 'supabase' in url and 'sslmode' not in url:
+                url += '&sslmode=require'
+                
+            return url
         # Fallback to MySQL if DATABASE_URL not provided
         if not self.MYSQL_PASSWORD:
             raise ValueError("Either DATABASE_URL or MYSQL_PASSWORD must be provided")
