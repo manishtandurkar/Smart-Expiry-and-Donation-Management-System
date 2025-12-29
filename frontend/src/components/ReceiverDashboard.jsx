@@ -75,7 +75,14 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
       setRequestModal(false);
       fetchData();
     } catch (err) {
-      alert('Failed to submit request: ' + (err.response?.data?.detail || err.message));
+      console.error('Full error:', err);
+      console.error('Error response:', err.response);
+      const errorMsg = err.response?.data?.detail 
+        ? (typeof err.response.data.detail === 'string' 
+            ? err.response.data.detail 
+            : JSON.stringify(err.response.data.detail))
+        : err.message;
+      alert('Failed to submit request: ' + errorMsg);
     }
   };
 
@@ -104,7 +111,14 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
       setNewItemNotes('');
       fetchData();
     } catch (err) {
-      alert('Failed to submit request: ' + (err.response?.data?.detail || err.message));
+      console.error('Full error:', err);
+      console.error('Error response:', err.response);
+      const errorMsg = err.response?.data?.detail 
+        ? (typeof err.response.data.detail === 'string' 
+            ? err.response.data.detail 
+            : JSON.stringify(err.response.data.detail))
+        : err.message;
+      alert('Failed to submit request: ' + errorMsg);
     }
   };
 
