@@ -14,11 +14,14 @@ class Settings(BaseSettings):
     APP_NAME: str = "Smart Expiry and Donation Management System"
     DEBUG: bool = True
     
-    # MySQL Configuration
+    # Database Configuration (PostgreSQL or MySQL)
+    DATABASE_URL: Optional[str] = None  # Full database URL (preferred for PostgreSQL)
+    
+    # MySQL Configuration (fallback if not using DATABASE_URL)
     MYSQL_HOST: str = "localhost"
     MYSQL_PORT: int = 3306
     MYSQL_USER: str = "root"
-    MYSQL_PASSWORD: str
+    MYSQL_PASSWORD: Optional[str] = None
     MYSQL_DATABASE: str = "expiry_donation_db"
     
     # MongoDB Configuration
@@ -33,12 +36,23 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "password"
     
     @property
-    def mysql_url(self) -> str:
-        """Construct MySQL database URL."""
+    def database_url(self) -> str:
+        """Get database URL - supports both PostgreSQL and MySQL."""
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
+        # Fallback to MySQL if DATABASE_URL not provided
+        if not self.MYSQL_PASSWORD:
+            raise ValueError("Either DATABASE_URL or MYSQL_PASSWORD must be provided")
         return (
             f"mysql+pymysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
             f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}"
         )
+    
+    # Keep old property for backwards compatibility
+    @property
+    def mysql_url(self) -> str:
+        """Construct MySQL database URL."""
+        return self.database_url
     
     class Config:
         env_file = ".env"

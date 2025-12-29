@@ -17,7 +17,7 @@ from .config import settings
 
 # Create database engine with connection pooling
 engine = create_engine(
-    settings.mysql_url,
+    settings.database_url,
     pool_pre_ping=True,  # Verify connections before using
     pool_recycle=3600,   # Recycle connections after 1 hour
     echo=settings.DEBUG  # Log SQL queries in debug mode
