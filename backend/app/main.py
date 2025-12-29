@@ -93,7 +93,7 @@ def read_root():
         "health": "/health",
         "database": {
             "mysql": settings.MYSQL_DATABASE,
-            "mongodb": settings.MONGO_DATABASE
+            "mongodb": settings.MONGODB_DATABASE
         }
     }
 
