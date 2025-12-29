@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     def database_url(self) -> str:
         """Get database URL - supports both PostgreSQL and MySQL."""
         if self.DATABASE_URL:
+            # If using PostgreSQL, ensure we use psycopg3 dialect
+            if self.DATABASE_URL.startswith('postgresql://'):
+                return self.DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
+            elif self.DATABASE_URL.startswith('postgres://'):
+                return self.DATABASE_URL.replace('postgres://', 'postgresql+psycopg://', 1)
             return self.DATABASE_URL
         # Fallback to MySQL if DATABASE_URL not provided
         if not self.MYSQL_PASSWORD:
