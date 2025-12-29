@@ -63,6 +63,17 @@ function AddItem() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validation
+    if (!formData.name || !formData.quantity || !formData.expiry_date || !formData.category || !formData.donor_id) {
+      alert('Please fill in all required fields (Name, Quantity, Expiry Date, Category, and Donor)');
+      return;
+    }
+    
+    if (donors.length === 0) {
+      alert('No donors available. Please ensure the database is connected or contact the administrator.');
+      return;
+    }
+    
     try {
       setLoading(true);
       const data = {
