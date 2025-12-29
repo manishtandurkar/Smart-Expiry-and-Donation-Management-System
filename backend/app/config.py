@@ -46,6 +46,11 @@ class Settings(BaseSettings):
             elif url.startswith('postgres://'):
                 url = url.replace('postgres://', 'postgresql+psycopg://', 1)
             
+            # Log the connection (mask password)
+            masked_url = url.split('@')[1] if '@' in url else url
+            import logging
+            logging.info(f"✓ Using PostgreSQL database: {masked_url}")
+            
             # For Supabase pooler, ensure we're using the correct connection mode
             if 'supabase' in url and '?' not in url:
                 url += '?sslmode=require'
