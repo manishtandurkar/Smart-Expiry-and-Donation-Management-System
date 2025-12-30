@@ -61,6 +61,11 @@ function DonorDashboard({ user, donorId, onLogout }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!donorId) {
+      alert('Account Error: Your user profile is not linked to a donor record. Please logout and login again to auto-fix this issue.');
+      return;
+    }
+
     try {
       setLoading(true);
       const data = {

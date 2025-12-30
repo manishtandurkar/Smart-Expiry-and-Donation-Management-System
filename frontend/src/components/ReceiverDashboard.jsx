@@ -8,13 +8,13 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
   const [myRequests, setMyRequests] = useState([]);
   const [approvedRequests, setApprovedRequests] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   // Request form
   const [requestModal, setRequestModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [requestQuantity, setRequestQuantity] = useState('');
   const [requestNotes, setRequestNotes] = useState('');
-  
+
   // New item request form
   const [newItemModal, setNewItemModal] = useState(false);
   const [newItemName, setNewItemName] = useState('');
@@ -53,6 +53,10 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
   };
 
   const submitRequest = async () => {
+    if (!receiverId) {
+      alert('Account Error: Your user profile is not linked to a receiver record. Please logout and login again to auto-fix this issue.');
+      return;
+    }
     if (!requestQuantity || parseInt(requestQuantity) <= 0) {
       alert('Please enter a valid quantity');
       return;
@@ -77,16 +81,20 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
     } catch (err) {
       console.error('Full error:', err);
       console.error('Error response:', err.response);
-      const errorMsg = err.response?.data?.detail 
-        ? (typeof err.response.data.detail === 'string' 
-            ? err.response.data.detail 
-            : JSON.stringify(err.response.data.detail))
+      const errorMsg = err.response?.data?.detail
+        ? (typeof err.response.data.detail === 'string'
+          ? err.response.data.detail
+          : JSON.stringify(err.response.data.detail))
         : err.message;
       alert('Failed to submit request: ' + errorMsg);
     }
   };
 
   const submitNewItemRequest = async () => {
+    if (!receiverId) {
+      alert('Account Error: Your user profile is not linked to a receiver record. Please logout and login again to auto-fix this issue.');
+      return;
+    }
     if (!newItemName.trim()) {
       alert('Please enter the item name');
       return;
@@ -113,17 +121,17 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
     } catch (err) {
       console.error('Full error:', err);
       console.error('Error response:', err.response);
-      const errorMsg = err.response?.data?.detail 
-        ? (typeof err.response.data.detail === 'string' 
-            ? err.response.data.detail 
-            : JSON.stringify(err.response.data.detail))
+      const errorMsg = err.response?.data?.detail
+        ? (typeof err.response.data.detail === 'string'
+          ? err.response.data.detail
+          : JSON.stringify(err.response.data.detail))
         : err.message;
       alert('Failed to submit request: ' + errorMsg);
     }
   };
 
   const getStatusClass = (status) => {
-    switch(status) {
+    switch (status) {
       case 'EXPIRED': return 'status-expired';
       case 'CRITICAL': return 'status-critical';
       case 'WARNING': return 'status-warning';
@@ -132,7 +140,7 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
   };
 
   const getRequestStatusClass = (status) => {
-    switch(status) {
+    switch (status) {
       case 'approved': return 'req-approved';
       case 'rejected': return 'req-rejected';
       default: return 'req-pending';
@@ -150,20 +158,20 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
       </header>
 
       <nav className="dashboard-nav">
-        <button 
-          className={activeTab === 'inventory' ? 'active' : ''} 
+        <button
+          className={activeTab === 'inventory' ? 'active' : ''}
           onClick={() => setActiveTab('inventory')}
         >
           📦 Available Inventory
         </button>
-        <button 
-          className={activeTab === 'myrequests' ? 'active' : ''} 
+        <button
+          className={activeTab === 'myrequests' ? 'active' : ''}
           onClick={() => setActiveTab('myrequests')}
         >
           📋 My Requests
         </button>
-        <button 
-          className={activeTab === 'approved' ? 'active' : ''} 
+        <button
+          className={activeTab === 'approved' ? 'active' : ''}
           onClick={() => setActiveTab('approved')}
         >
           ✅ Approved Items
@@ -206,7 +214,7 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
                         <td><strong>{item.name}</strong></td>
                         <td>{item.quantity} units</td>
                         <td>
-                          <button 
+                          <button
                             className="request-btn"
                             onClick={() => handleRequestItem(item)}
                             disabled={item.quantity === 0}

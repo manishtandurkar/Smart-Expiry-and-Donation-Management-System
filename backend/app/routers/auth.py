@@ -50,10 +50,36 @@ def login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
         donor = crud.get_donor_by_user_id(db, user.user_id)
         if donor:
             donor_id = donor.donor_id
+        else:
+            # Auto-create missing donor profile
+            try:
+                donor_data = schemas.DonorCreate(
+                    name=user.name,
+                    contact=user.contact or "0000000000",
+                    address=user.address
+                )
+                donor = crud.create_donor_with_user(db, donor_data, user.user_id)
+                donor_id = donor.donor_id
+            except Exception as e:
+                print(f"Error auto-creating donor profile: {e}")
+
     elif user.role == 'receiver':
         receiver = crud.get_receiver_by_user_id(db, user.user_id)
         if receiver:
             receiver_id = receiver.receiver_id
+        else:
+            # Auto-create missing receiver profile
+            try:
+                receiver_data = schemas.ReceiverCreate(
+                    name=user.name,
+                    contact=user.contact or "0000000000",
+                    address=user.address,
+                    region="Unknown"
+                )
+                receiver = crud.create_receiver_with_user(db, receiver_data, user.user_id)
+                receiver_id = receiver.receiver_id
+            except Exception as e:
+                print(f"Error auto-creating receiver profile: {e}")
     
     return schemas.UserWithToken(
         user=user,
