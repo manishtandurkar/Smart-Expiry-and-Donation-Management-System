@@ -97,13 +97,45 @@ function AddItem() {
       });
       setPrediction(null);
     } catch (err) {
-      console.error('Full error:', err);
-      console.error('Error response:', err.response);
-      const errorMsg = err.response?.data?.detail 
-        ? (typeof err.response.data.detail === 'string' 
-            ? err.response.data.detail 
-            : JSON.stringify(err.response.data.detail))
-        : err.message;
+      console.error('Full error object:', err);
+      
+      let errorMsg = 'Unknown error occurred';
+
+      if (err.response) {
+        console.error('Error response data:', err.response.data);
+        console.error('Error response status:', err.response.status);
+        
+        const data = err.response.data;
+        
+        if (data) {
+          if (typeof data === 'string') {
+            errorMsg = data;
+          } else if (data.detail) {
+            errorMsg = typeof data.detail === 'string' 
+              ? data.detail 
+              : JSON.stringify(data.detail);
+          } else if (data.message) {
+            errorMsg = typeof data.message === 'string'
+              ? data.message
+              : JSON.stringify(data.message);
+          } else {
+            // Fallback: stringify the whole data object
+            errorMsg = JSON.stringify(data);
+          }
+        } else {
+          errorMsg = `Server returned status ${err.response.status}`;
+        }
+      } else if (err.message) {
+        errorMsg = err.message;
+      } else {
+        // Fallback for non-standard error objects
+        try {
+          errorMsg = JSON.stringify(err);
+        } catch (e) {
+          errorMsg = String(err);
+        }
+      }
+
       alert('Failed to add item: ' + errorMsg);
     } finally {
       setLoading(false);

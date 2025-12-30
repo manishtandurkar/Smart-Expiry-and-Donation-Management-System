@@ -60,7 +60,7 @@ function DonorDashboard({ user, donorId, onLogout }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
       const data = {
@@ -71,7 +71,7 @@ function DonorDashboard({ user, donorId, onLogout }) {
 
       await itemsAPI.create(data);
       alert('Item added successfully! It is now available in the common inventory.');
-      
+
       setFormData({
         name: '',
         quantity: '',
@@ -82,14 +82,49 @@ function DonorDashboard({ user, donorId, onLogout }) {
       });
       setPrediction(null);
     } catch (err) {
-      alert('Failed to add item: ' + (err.response?.data?.detail || err.message));
+      console.error('Full error object:', err);
+
+      let errorMsg = 'Unknown error occurred';
+
+      if (err.response) {
+        console.error('Error response data:', err.response.data);
+
+        const data = err.response.data;
+        if (data) {
+          if (typeof data === 'string') {
+            errorMsg = data;
+          } else if (data.detail) {
+            errorMsg = typeof data.detail === 'string'
+              ? data.detail
+              : JSON.stringify(data.detail);
+          } else if (data.message) {
+            errorMsg = typeof data.message === 'string'
+              ? data.message
+              : JSON.stringify(data.message);
+          } else {
+            errorMsg = JSON.stringify(data);
+          }
+        } else {
+          errorMsg = `Server returned status ${err.response.status}`;
+        }
+      } else if (err.message) {
+        errorMsg = err.message;
+      } else {
+        try {
+          errorMsg = JSON.stringify(err);
+        } catch (e) {
+          errorMsg = String(err);
+        }
+      }
+
+      alert('Failed to add item: ' + errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const getStatusClass = (status) => {
-    switch(status) {
+    switch (status) {
       case 'EXPIRED': return 'status-expired';
       case 'CRITICAL': return 'status-critical';
       case 'WARNING': return 'status-warning';
@@ -108,14 +143,14 @@ function DonorDashboard({ user, donorId, onLogout }) {
       </header>
 
       <nav className="dashboard-nav">
-        <button 
-          className={activeTab === 'add' ? 'active' : ''} 
+        <button
+          className={activeTab === 'add' ? 'active' : ''}
           onClick={() => setActiveTab('add')}
         >
           ➕ Add Item
         </button>
-        <button 
-          className={activeTab === 'myitems' ? 'active' : ''} 
+        <button
+          className={activeTab === 'myitems' ? 'active' : ''}
           onClick={() => setActiveTab('myitems')}
         >
           📦 My Donations

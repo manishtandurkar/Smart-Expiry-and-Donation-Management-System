@@ -29,7 +29,7 @@ function Login({ onLogin }) {
     try {
       const response = await authAPI.login(username, password);
       const userData = response.data;
-      
+
       // Verify role matches
       if (userData.user.role !== selectedRole) {
         setError(`This account is registered as ${userData.user.role}, not ${selectedRole}`);
@@ -40,10 +40,16 @@ function Login({ onLogin }) {
       // Store user data in localStorage
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userRole', userData.user.role);
-      
+
       onLogin(userData);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid username or password');
+      let errorMsg = 'Invalid username or password';
+      if (err.response?.data?.detail) {
+        errorMsg = typeof err.response.data.detail === 'string'
+          ? err.response.data.detail
+          : JSON.stringify(err.response.data.detail);
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -74,7 +80,7 @@ function Login({ onLogin }) {
           <h1>🔄 Smart Expiry & Donation System</h1>
           <p>Select your role to continue</p>
         </div>
-        
+
         <div className="role-cards">
           <div className="role-card" onClick={() => handleRoleSelect('donor')}>
             <span className="role-icon">{getRoleIcon('donor')}</span>
@@ -105,7 +111,7 @@ function Login({ onLogin }) {
     <div className="login-container">
       <div className="login-box">
         <button className="back-btn" onClick={handleBack}>← Back</button>
-        
+
         <div className="login-header">
           <span className="role-icon-large">{getRoleIcon(selectedRole)}</span>
           <h2>{selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)} Login</h2>
@@ -114,7 +120,7 @@ function Login({ onLogin }) {
 
         <form onSubmit={handleSubmit} className="login-form">
           {error && <div className="error-message">{error}</div>}
-          
+
           <div className="form-group">
             <label>Username</label>
             <input
@@ -147,17 +153,17 @@ function Login({ onLogin }) {
           <p>Demo credentials (username = password):</p>
           {selectedRole === 'donor' && (
             <div>
-              <code>greenvalleyfarm / greenvalleyfarm</code><br/>
-              <code>citymedicalstore / citymedicalstore</code><br/>
-              <code>fashionhub / fashionhub</code><br/>
+              <code>greenvalleyfarm / greenvalleyfarm</code><br />
+              <code>citymedicalstore / citymedicalstore</code><br />
+              <code>fashionhub / fashionhub</code><br />
               <code>communitycenter / communitycenter</code>
             </div>
           )}
           {selectedRole === 'receiver' && (
             <div>
-              <code>hopeorphanage / hopeorphanage</code><br/>
-              <code>seniorcitizensh / seniorcitizensh</code><br/>
-              <code>disasterrelief / disasterrelief</code><br/>
+              <code>hopeorphanage / hopeorphanage</code><br />
+              <code>seniorcitizensh / seniorcitizensh</code><br />
+              <code>disasterrelief / disasterrelief</code><br />
               <code>homelessshelter / homelessshelter</code>
             </div>
           )}

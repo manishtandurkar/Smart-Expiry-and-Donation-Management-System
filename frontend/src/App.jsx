@@ -11,16 +11,9 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        localStorage.removeItem('user');
-        localStorage.removeItem('userRole');
-      }
-    }
+    // Clear any existing session on app start - always require fresh login
+    localStorage.removeItem('user');
+    localStorage.removeItem('userRole');
     setLoading(false);
   }, []);
 
