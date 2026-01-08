@@ -2,6 +2,8 @@
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
 }
 
 .alerts-header {
@@ -33,7 +35,7 @@
   background: white;
   border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   gap: 15px;
 }
@@ -46,10 +48,25 @@
   height: fit-content;
 }
 
-.severity-critical { background: #e74c3c; color: white; }
-.severity-high { background: #e67e22; color: white; }
-.severity-medium { background: #f39c12; color: white; }
-.severity-low { background: #3498db; color: white; }
+.severity-critical {
+  background: #e74c3c;
+  color: white;
+}
+
+.severity-high {
+  background: #e67e22;
+  color: white;
+}
+
+.severity-medium {
+  background: #f39c12;
+  color: white;
+}
+
+.severity-low {
+  background: #3498db;
+  color: white;
+}
 
 .alert-content {
   flex: 1;
