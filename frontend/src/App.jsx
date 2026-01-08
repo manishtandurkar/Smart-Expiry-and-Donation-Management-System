@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import Login from './components/Login';
 import DonorDashboard from './components/DonorDashboard';
 import ReceiverDashboard from './components/ReceiverDashboard';
@@ -74,6 +75,7 @@ function App() {
   return (
     <div className="app">
       {renderDashboard()}
+      <Analytics />
     </div>
   );
 }
