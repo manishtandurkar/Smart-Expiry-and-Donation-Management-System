@@ -120,6 +120,15 @@ def get_statistics(db: Session = Depends(get_db)):
     return crud.get_dashboard_stats(db)
 
 
+@app.get("/api/charts", response_model=schemas.ChartData, tags=["Statistics"])
+def get_chart_data(db: Session = Depends(get_db)):
+    """
+    Get chart data for admin dashboard.
+    Returns aggregated data for various visualizations.
+    """
+    return crud.get_chart_data(db)
+
+
 # ============================================================================
 # Error Handlers
 # ============================================================================

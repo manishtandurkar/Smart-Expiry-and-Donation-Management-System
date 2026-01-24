@@ -90,6 +90,7 @@ export const alertsAPI = {
 
 export const statsAPI = {
   getDashboard: () => api.get('/api/stats'),
+  getChartData: () => api.get('/api/charts'),
 };
 
 // ============================================================================
