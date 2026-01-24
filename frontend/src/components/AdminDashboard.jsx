@@ -354,11 +354,7 @@ export default function Admin({ user, onLogout }) {
                         
                         <div className="donation-details">
                           <div className="detail-row">
-                            <span className="detail-label">🎁 From:</span>
-                            <span className="detail-value">{donation.approving_donor?.name || donation.item?.donor?.name || 'N/A'}</span>
-                          </div>
-                          <div className="detail-row">
-                            <span className="detail-label">🏢 To:</span>
+                            <span className="detail-label"> To:</span>
                             <span className="detail-value">{donation.receiver?.name || 'N/A'}</span>
                           </div>
                           {donation.delivery_mode && (
