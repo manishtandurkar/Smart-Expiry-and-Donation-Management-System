@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { donorsAPI, receiversAPI, authAPI, requestsAPI, statsAPI, itemsAPI, donationsAPI } from '../services/api';
+import Charts from './Charts';
 import './AdminDashboard.css';
 
 export default function Admin({ user, onLogout }) {
@@ -144,6 +145,12 @@ export default function Admin({ user, onLogout }) {
           📊 Overview
         </button>
         <button 
+          className={activeTab === 'analytics' ? 'active' : ''} 
+          onClick={() => setActiveTab('analytics')}
+        >
+          📈 Analytics
+        </button>
+        <button 
           className={activeTab === 'items' ? 'active' : ''} 
           onClick={() => setActiveTab('items')}
         >
@@ -221,6 +228,12 @@ export default function Admin({ user, onLogout }) {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="analytics-section">
+            <Charts />
           </div>
         )}
 

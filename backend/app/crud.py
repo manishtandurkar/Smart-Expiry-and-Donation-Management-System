@@ -424,3 +424,97 @@ def delete_donation_request(db: Session, request_id: int) -> bool:
     db.delete(db_request)
     db.commit()
     return True
+
+
+# ============================================================================
+# Chart Data Analytics
+# ============================================================================
+
+def get_chart_data(db: Session) -> schemas.ChartData:
+    """Get aggregated data for dashboard charts."""
+    
+    # 1. Category Distribution (for pie chart)
+    category_data = db.query(
+        models.Item.category,
+        func.count(models.Item.item_id).label('count')
+    ).filter(
+        models.Item.quantity > 0
+    ).group_by(
+        models.Item.category
+    ).all()
+    
+    category_distribution = [
+        schemas.CategoryDistribution(
+            category=cat or 'Uncategorized',
+            count=count
+        ) for cat, count in category_data
+    ]
+    
+    # 2. Donation Trends (last 30 days for bar chart)
+    thirty_days_ago = date.today() - timedelta(days=30)
+    donation_trend_data = db.query(
+        func.date(models.Donation.donation_date).label('date'),
+        func.count(models.Donation.donation_id).label('count')
+    ).filter(
+        models.Donation.donation_date >= thirty_days_ago
+    ).group_by(
+        func.date(models.Donation.donation_date)
+    ).order_by(
+        func.date(models.Donation.donation_date)
+    ).all()
+    
+    donation_trends = [
+        schemas.DonationTrend(
+            date=str(d),
+            count=count
+        ) for d, count in donation_trend_data
+    ]
+    
+    # 3. Expiry Status Distribution (for doughnut chart)
+    today = date.today()
+    expiry_data = db.query(
+        case(
+            (models.Item.expiry_date < today, 'Expired'),
+            (models.Item.expiry_date <= today + timedelta(days=3), 'Critical'),
+            (models.Item.expiry_date <= today + timedelta(days=7), 'Warning'),
+            else_='Safe'
+        ).label('status'),
+        func.count(models.Item.item_id).label('count')
+    ).filter(
+        models.Item.quantity > 0
+    ).group_by('status').all()
+    
+    expiry_distribution = [
+        schemas.ExpiryDistribution(
+            status=status,
+            count=count
+        ) for status, count in expiry_data
+    ]
+    
+    # 4. Top 5 Donors by Item Count (for horizontal bar chart)
+    top_donor_data = db.query(
+        models.Donor.name,
+        func.count(models.Item.item_id).label('item_count')
+    ).join(
+        models.Item, models.Donor.donor_id == models.Item.donor_id
+    ).filter(
+        models.Item.quantity > 0
+    ).group_by(
+        models.Donor.donor_id, models.Donor.name
+    ).order_by(
+        func.count(models.Item.item_id).desc()
+    ).limit(5).all()
+    
+    top_donors = [
+        schemas.TopDonor(
+            name=name,
+            item_count=count
+        ) for name, count in top_donor_data
+    ]
+    
+    return schemas.ChartData(
+        category_distribution=category_distribution,
+        donation_trends=donation_trends,
+        expiry_distribution=expiry_distribution,
+        top_donors=top_donors
+    )

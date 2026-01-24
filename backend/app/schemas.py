@@ -368,3 +368,39 @@ class DonationRequestResponse(DonationRequestBase):
     
     class Config:
         from_attributes = True
+
+
+# ============================================================================
+# Chart Data Schemas
+# ============================================================================
+
+class CategoryDistribution(BaseModel):
+    """Category distribution for pie chart."""
+    category: str
+    count: int
+
+
+class DonationTrend(BaseModel):
+    """Donation trend for bar chart."""
+    date: str
+    count: int
+
+
+class ExpiryDistribution(BaseModel):
+    """Expiry status distribution for doughnut chart."""
+    status: str
+    count: int
+
+
+class TopDonor(BaseModel):
+    """Top donor statistics."""
+    name: str
+    item_count: int
+
+
+class ChartData(BaseModel):
+    """Aggregated chart data for admin dashboard."""
+    category_distribution: List[CategoryDistribution]
+    donation_trends: List[DonationTrend]
+    expiry_distribution: List[ExpiryDistribution]
+    top_donors: List[TopDonor]
