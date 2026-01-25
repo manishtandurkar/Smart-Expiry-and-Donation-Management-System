@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { statsAPI, alertsAPI } from '../services/api';
+import { useToast } from './Toast';
 import './Dashboard.css';
 
 function Dashboard() {
+  const toast = useToast();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,10 +32,10 @@ function Dashboard() {
     try {
       setChecking(true);
       await alertsAPI.triggerCheck(30);
-      alert('Expiry check completed! Check alerts page for results.');
+      toast.success('Expiry check completed! Check alerts page for results.');
       fetchStats(); // Refresh stats
     } catch (err) {
-      alert('Failed to run expiry check');
+      toast.error('Failed to run expiry check');
       console.error(err);
     } finally {
       setChecking(false);

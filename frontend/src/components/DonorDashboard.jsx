@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { itemsAPI } from '../services/api';
+import { useToast } from './Toast';
 import './DonorDashboard.css';
 
 function DonorDashboard({ user, donorId, onLogout }) {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('add');
   const [formData, setFormData] = useState({
     name: '',
@@ -45,7 +47,7 @@ function DonorDashboard({ user, donorId, onLogout }) {
 
   const handlePredictCategory = async () => {
     if (!formData.name) {
-      alert('Please enter the item name first');
+      toast.warning('Please enter the item name first');
       return;
     }
 
@@ -62,7 +64,7 @@ function DonorDashboard({ user, donorId, onLogout }) {
     e.preventDefault();
 
     if (!donorId) {
-      alert('Account Error: Your user profile is not linked to a donor record. Please logout and login again to auto-fix this issue.');
+      toast.error('Account Error: Your user profile is not linked to a donor record. Please logout and login again to auto-fix this issue.');
       return;
     }
 
@@ -75,7 +77,7 @@ function DonorDashboard({ user, donorId, onLogout }) {
       };
 
       await itemsAPI.create(data);
-      alert('Item added successfully! It is now available in the common inventory.');
+      toast.success('Item added successfully! It is now available in the common inventory.');
 
       setFormData({
         name: '',
@@ -122,7 +124,7 @@ function DonorDashboard({ user, donorId, onLogout }) {
         }
       }
 
-      alert('Failed to add item: ' + errorMsg);
+      toast.error('Failed to add item: ' + errorMsg);
     } finally {
       setLoading(false);
     }

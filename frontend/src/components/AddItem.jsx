@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { itemsAPI, donorsAPI } from '../services/api';
+import { useToast } from './Toast';
 import './AddItem.css';
 
 function AddItem() {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     name: '',
     quantity: '',
@@ -42,7 +44,7 @@ function AddItem() {
 
   const handlePredictCategory = async () => {
     if (!formData.name) {
-      alert('Please enter the item name first');
+      toast.warning('Please enter the item name first');
       return;
     }
 
@@ -65,12 +67,12 @@ function AddItem() {
     
     // Validation
     if (!formData.name || !formData.quantity || !formData.expiry_date || !formData.category || !formData.donor_id) {
-      alert('Please fill in all required fields (Name, Quantity, Expiry Date, Category, and Donor)');
+      toast.warning('Please fill in all required fields (Name, Quantity, Expiry Date, Category, and Donor)');
       return;
     }
     
     if (donors.length === 0) {
-      alert('No donors available. Please ensure the database is connected or contact the administrator.');
+      toast.error('No donors available. Please ensure the database is connected or contact the administrator.');
       return;
     }
     
@@ -83,7 +85,7 @@ function AddItem() {
       };
 
       await itemsAPI.create(data);
-      alert('Item added successfully!');
+      toast.success('Item added successfully!');
       
       // Reset form
       setFormData({
@@ -136,7 +138,7 @@ function AddItem() {
         }
       }
 
-      alert('Failed to add item: ' + errorMsg);
+      toast.error('Failed to add item: ' + errorMsg);
     } finally {
       setLoading(false);
     }

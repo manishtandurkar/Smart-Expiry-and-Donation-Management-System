@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { donorsAPI, receiversAPI, authAPI, requestsAPI, statsAPI, itemsAPI, donationsAPI } from '../services/api';
+import { useToast } from './Toast';
 import Charts from './Charts';
 import './AdminDashboard.css';
 
 export default function Admin({ user, onLogout }) {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -66,7 +68,7 @@ export default function Admin({ user, onLogout }) {
     e.preventDefault();
     try {
       await authAPI.register(newUser);
-      alert(`${newUser.role.charAt(0).toUpperCase() + newUser.role.slice(1)} account created successfully!`);
+      toast.success(`${newUser.role.charAt(0).toUpperCase() + newUser.role.slice(1)} account created successfully!`);
       setNewUser({
         username: '',
         password: '',
@@ -77,7 +79,7 @@ export default function Admin({ user, onLogout }) {
       });
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.detail || err.message);
+      toast.error(err.response?.data?.detail || err.message);
     }
   };
 
@@ -93,7 +95,7 @@ export default function Admin({ user, onLogout }) {
       setConfirmState(null);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.detail || err.message);
+      toast.error(err.response?.data?.detail || err.message);
     }
   };
 
@@ -103,10 +105,10 @@ export default function Admin({ user, onLogout }) {
         status: action,
         admin_notes: action === 'approved' ? 'Approved by admin' : 'Rejected by admin',
       });
-      alert(`Request ${action} successfully!`);
+      toast.success(`Request ${action} successfully!`);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.detail || err.message);
+      toast.error(err.response?.data?.detail || err.message);
     }
   };
 

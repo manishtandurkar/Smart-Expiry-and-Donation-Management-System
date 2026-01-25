@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { donorsAPI, receiversAPI, adminAPI } from '../services/api';
+import { useToast } from './Toast';
 import { useNavigate } from 'react-router-dom';
 
 export default function Admin() {
+  const toast = useToast();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [authed, setAuthed] = useState(false);
@@ -51,7 +53,7 @@ export default function Admin() {
       setPassword('');
       setUsername('');
     } catch (err) {
-      alert('Invalid credentials');
+      toast.error('Invalid credentials');
     }
   }
 
@@ -73,7 +75,7 @@ export default function Admin() {
       setNewDonor({ name: '', contact: '', address: '' });
       fetchLists();
     } catch (err) {
-      alert(err.response?.data?.detail || err.message);
+      toast.error(err.response?.data?.detail || err.message);
     }
   }
 
@@ -84,19 +86,19 @@ export default function Admin() {
       setNewReceiver({ name: '', contact: '', address: '', organization_type: '' });
       fetchLists();
     } catch (err) {
-      alert(err.response?.data?.detail || err.message);
+      toast.error(err.response?.data?.detail || err.message);
     }
   }
 
   const [confirmState, setConfirmState] = useState(null);
 
   async function handleDeleteDonor(id, name) {
-    if (!localStorage.getItem('isAdmin')) return alert('Please login as admin first');
+    if (!localStorage.getItem('isAdmin')) return toast.warning('Please login as admin first');
     setConfirmState({ type: 'donor', id, name });
   }
 
   async function handleDeleteReceiver(id, name) {
-    if (!localStorage.getItem('isAdmin')) return alert('Please login as admin first');
+    if (!localStorage.getItem('isAdmin')) return toast.warning('Please login as admin first');
     setConfirmState({ type: 'receiver', id, name });
   }
 
@@ -201,7 +203,7 @@ export default function Admin() {
                 onClick={async () => {
                   try {
                     const pwd = localStorage.getItem('adminPassword') || adminPassword;
-                    if (!pwd) return alert('Admin password not available; please re-login');
+                    if (!pwd) return toast.error('Admin password not available; please re-login');
                     if (confirmState.type === 'donor') {
                       await donorsAPI.delete(confirmState.id, pwd);
                     } else {
@@ -210,7 +212,7 @@ export default function Admin() {
                     setConfirmState(null);
                     fetchLists();
                   } catch (err) {
-                    alert(err.response?.data?.detail || err.message);
+                    toast.error(err.response?.data?.detail || err.message);
                   }
                 }}
               >

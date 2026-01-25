@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { donationsAPI, itemsAPI, receiversAPI, donorsAPI } from '../services/api';
+import { useToast } from './Toast';
 import './RecordDonation.css';
 
 function RecordDonation() {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     item_id: '',
     receiver_id: '',
@@ -60,7 +62,7 @@ function RecordDonation() {
       };
 
       await donationsAPI.create(data);
-      alert('Donation recorded successfully!');
+      toast.success('Donation recorded successfully!');
       
       setFormData({
         item_id: '',
@@ -73,7 +75,7 @@ function RecordDonation() {
       });
       fetchData(); // Refresh items
     } catch (err) {
-      alert('Failed to record donation: ' + (err.response?.data?.detail || err.message));
+      toast.error('Failed to record donation: ' + (err.response?.data?.detail || err.message));
     } finally {
       setLoading(false);
     }

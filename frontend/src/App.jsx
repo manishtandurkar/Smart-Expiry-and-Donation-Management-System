@@ -5,6 +5,7 @@ import Login from './components/Login';
 import DonorDashboard from './components/DonorDashboard';
 import ReceiverDashboard from './components/ReceiverDashboard';
 import AdminDashboard from './components/AdminDashboard';
+import { ToastProvider } from './components/Toast';
 import './App.css';
 
 function App() {
@@ -73,10 +74,12 @@ function App() {
   };
 
   return (
-    <div className="app">
-      {renderDashboard()}
-      <Analytics />
-    </div>
+    <ToastProvider>
+      <div className="app">
+        {renderDashboard()}
+        <Analytics />
+      </div>
+    </ToastProvider>
   );
 }
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { itemsAPI, requestsAPI } from '../services/api';
+import { useToast } from './Toast';
 import './ReceiverDashboard.css';
 
 function ReceiverDashboard({ user, receiverId, onLogout }) {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('inventory');
   const [items, setItems] = useState([]);
   const [myRequests, setMyRequests] = useState([]);
@@ -54,16 +56,16 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
 
   const submitRequest = async () => {
     if (!receiverId) {
-      alert('Account Error: Your user profile is not linked to a receiver record. Please logout and login again to auto-fix this issue.');
+      toast.error('Account Error: Your user profile is not linked to a receiver record. Please logout and login again to auto-fix this issue.');
       return;
     }
     if (!requestQuantity || parseInt(requestQuantity) <= 0) {
-      alert('Please enter a valid quantity');
+      toast.warning('Please enter a valid quantity');
       return;
     }
 
     if (parseInt(requestQuantity) > selectedItem.quantity) {
-      alert(`Cannot request more than available quantity (${selectedItem.quantity})`);
+      toast.warning(`Cannot request more than available quantity (${selectedItem.quantity})`);
       return;
     }
 
@@ -75,7 +77,7 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
         request_type: 'existing',
         notes: requestNotes,
       });
-      alert('Request submitted successfully! Waiting for admin approval.');
+      toast.success('Request submitted successfully! Waiting for admin approval.');
       setRequestModal(false);
       fetchData();
     } catch (err) {
@@ -86,21 +88,21 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
           ? err.response.data.detail
           : JSON.stringify(err.response.data.detail))
         : err.message;
-      alert('Failed to submit request: ' + errorMsg);
+      toast.error('Failed to submit request: ' + errorMsg);
     }
   };
 
   const submitNewItemRequest = async () => {
     if (!receiverId) {
-      alert('Account Error: Your user profile is not linked to a receiver record. Please logout and login again to auto-fix this issue.');
+      toast.error('Account Error: Your user profile is not linked to a receiver record. Please logout and login again to auto-fix this issue.');
       return;
     }
     if (!newItemName.trim()) {
-      alert('Please enter the item name');
+      toast.warning('Please enter the item name');
       return;
     }
     if (!newItemQuantity || parseInt(newItemQuantity) <= 0) {
-      alert('Please enter a valid quantity');
+      toast.warning('Please enter a valid quantity');
       return;
     }
 
@@ -112,7 +114,7 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
         request_type: 'new',
         notes: newItemNotes,
       });
-      alert('New item request submitted! Admin will review your request.');
+      toast.success('New item request submitted! Admin will review your request.');
       setNewItemModal(false);
       setNewItemName('');
       setNewItemQuantity('');
@@ -126,7 +128,7 @@ function ReceiverDashboard({ user, receiverId, onLogout }) {
           ? err.response.data.detail
           : JSON.stringify(err.response.data.detail))
         : err.message;
-      alert('Failed to submit request: ' + errorMsg);
+      toast.error('Failed to submit request: ' + errorMsg);
     }
   };
 
