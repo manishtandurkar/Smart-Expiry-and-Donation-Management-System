@@ -45,53 +45,101 @@ class EnhancedCategoryPredictor:
         'Food': {
             'description': 'Food items, groceries, edible products, beverages, and consumables',
             'keywords': [
-                'rice', 'wheat', 'flour', 'grain', 'cereal', 'bread', 'pasta',
-                'beans', 'lentils', 'milk', 'cheese', 'yogurt', 'butter',
-                'egg', 'meat', 'chicken', 'fish', 'vegetable', 'fruit',
-                'oil', 'sugar', 'salt', 'spice', 'snack', 'candy', 'chocolate',
-                'juice', 'water', 'beverage', 'canned', 'frozen', 'fresh'
+                'rice', 'wheat', 'flour', 'grain', 'cereal', 'bread', 'pasta', 'noodle',
+                'beans', 'lentils', 'dal', 'pulses', 'milk', 'cheese', 'yogurt', 'butter', 'ghee', 'cream',
+                'egg', 'meat', 'chicken', 'mutton', 'beef', 'pork', 'fish', 'seafood', 'prawn', 'crab',
+                'vegetable', 'fruit', 'tomato', 'potato', 'onion', 'carrot', 'apple', 'banana', 'orange',
+                'oil', 'cooking', 'sugar', 'salt', 'spice', 'masala', 'pepper', 'chilli', 'turmeric',
+                'snack', 'biscuit', 'cookie', 'candy', 'chocolate', 'sweet', 'dessert', 'cake',
+                'juice', 'water', 'tea', 'coffee', 'beverage', 'drink', 'soda', 'cola',
+                'canned', 'frozen', 'fresh', 'packed', 'dry', 'preserved', 'pickle',
+                'sauce', 'ketchup', 'jam', 'honey', 'peanut', 'almond', 'cashew', 'nuts',
+                'grocery', 'edible', 'food', 'meal', 'ration', 'provision'
             ]
         },
         'Medicine': {
             'description': 'Medicines, drugs, pharmaceuticals, medical supplies, and healthcare products',
             'keywords': [
-                'tablet', 'capsule', 'syrup', 'medicine', 'drug', 'pharmaceutical',
-                'antibiotic', 'painkiller', 'paracetamol', 'aspirin', 'ibuprofen',
-                'vitamin', 'supplement', 'injection', 'vaccine', 'bandage',
-                'antiseptic', 'ointment', 'prescription', 'medical', 'treatment'
+                'tablet', 'capsule', 'syrup', 'medicine', 'drug', 'pharmaceutical', 'medication',
+                'antibiotic', 'painkiller', 'paracetamol', 'aspirin', 'ibuprofen', 'acetaminophen',
+                'vitamin', 'supplement', 'multivitamin', 'calcium', 'iron', 'zinc',
+                'injection', 'vaccine', 'immunization', 'bandage', 'gauze', 'dressing',
+                'antiseptic', 'ointment', 'cream', 'gel', 'lotion', 'balm',
+                'prescription', 'medical', 'treatment', 'therapy', 'remedy',
+                'inhaler', 'nebulizer', 'drops', 'pill', 'dose',
+                'antihistamine', 'antacid', 'laxative', 'probiotic',
+                'cough', 'cold', 'fever', 'pain', 'relief',
+                'first aid', 'surgical', 'diagnostic', 'test kit',
+                'crocin', 'dolo', 'combiflam', 'cetrizine', 'disprin'
             ]
         },
         'Clothing': {
             'description': 'Clothing items, apparel, footwear, and fashion accessories',
             'keywords': [
-                'shirt', 'pant', 'trouser', 'dress', 'skirt', 'jacket', 'coat',
-                'sweater', 't-shirt', 'jeans', 'shorts', 'underwear',
-                'sock', 'shoe', 'sandal', 'boot', 'hat', 'cap', 'scarf',
-                'fabric', 'textile', 'garment', 'apparel', 'clothing', 'wear'
+                'shirt', 'pant', 'trouser', 'dress', 'skirt', 'jacket', 'coat', 'blazer',
+                'sweater', 'cardigan', 'hoodie', 't-shirt', 'tshirt', 'top', 'blouse',
+                'jeans', 'shorts', 'capri', 'leggings', 'track', 'jogger',
+                'underwear', 'innerwear', 'bra', 'panty', 'boxer', 'brief',
+                'sock', 'stocking', 'shoe', 'sandal', 'slipper', 'boot', 'sneaker', 'footwear',
+                'hat', 'cap', 'scarf', 'shawl', 'muffler', 'glove', 'belt',
+                'saree', 'kurta', 'salwar', 'kameez', 'dhoti', 'lungi',
+                'fabric', 'textile', 'cloth', 'garment', 'apparel', 'clothing', 'wear', 'attire',
+                'cotton', 'silk', 'wool', 'denim', 'leather',
+                'uniform', 'suit', 'traditional', 'ethnic', 'formal', 'casual'
             ]
         },
         'Hygiene': {
             'description': 'Personal care products, cleaning supplies, and hygiene items',
             'keywords': [
-                'soap', 'shampoo', 'conditioner', 'detergent', 'cleanser',
-                'sanitizer', 'hand wash', 'body wash', 'toothpaste', 'toothbrush',
-                'deodorant', 'perfume', 'lotion', 'moisturizer', 'sunscreen',
-                'tissue', 'toilet paper', 'diaper', 'sanitary', 'towel'
+                'soap', 'shampoo', 'conditioner', 'detergent', 'cleanser', 'cleaner', 'wash',
+                'sanitizer', 'disinfectant', 'hand wash', 'handwash', 'body wash', 'bodywash', 'face wash',
+                'toothpaste', 'toothbrush', 'dental', 'mouthwash', 'floss',
+                'deodorant', 'deo', 'perfume', 'fragrance', 'cologne',
+                'lotion', 'moisturizer', 'sunscreen', 'cream', 'oil', 'powder',
+                'tissue', 'napkin', 'toilet paper', 'wipe', 'cotton',
+                'diaper', 'nappy', 'sanitary', 'pad', 'tampon', 'menstrual',
+                'towel', 'cloth', 'sponge', 'scrub', 'brush',
+                'shaving', 'razor', 'blade', 'foam', 'aftershave',
+                'nail', 'comb', 'hairbrush', 'cosmetic', 'makeup',
+                'bathing', 'shower', 'hygiene', 'personal care', 'grooming'
             ]
         },
         'Stationery': {
             'description': 'Office supplies, school items, writing materials, and art supplies',
             'keywords': [
-                'pen', 'pencil', 'eraser', 'notebook', 'paper', 'book',
-                'marker', 'highlighter', 'ruler', 'scissors', 'glue', 'tape',
-                'stapler', 'folder', 'file', 'calculator', 'crayon', 'paint'
+                'pen', 'pencil', 'eraser', 'sharpener', 'notebook', 'copy', 'register',
+                'paper', 'sheet', 'book', 'diary', 'journal', 'notepad',
+                'marker', 'highlighter', 'sketch', 'crayon', 'color', 'paint', 'watercolor',
+                'ruler', 'scale', 'compass', 'protractor', 'geometry',
+                'scissors', 'cutter', 'knife', 'blade',
+                'glue', 'adhesive', 'tape', 'cellotape', 'fevicol',
+                'stapler', 'staple', 'pin', 'clip', 'binder',
+                'folder', 'file', 'envelope', 'calculator',
+                'ink', 'refill', 'cartridge', 'toner',
+                'board', 'chart', 'drawing', 'art', 'craft',
+                'office', 'school', 'stationery', 'writing', 'supplies'
+            ]
+        },
+        'Electronics': {
+            'description': 'Electronic devices, gadgets, appliances, and technology items',
+            'keywords': [
+                'phone', 'mobile', 'smartphone', 'tablet', 'ipad', 'laptop', 'computer', 'pc',
+                'charger', 'cable', 'wire', 'adapter', 'battery', 'powerbank',
+                'headphone', 'earphone', 'earbud', 'speaker', 'bluetooth',
+                'tv', 'television', 'monitor', 'screen', 'display',
+                'fan', 'cooler', 'ac', 'heater', 'iron', 'appliance',
+                'watch', 'smartwatch', 'clock', 'alarm',
+                'camera', 'webcam', 'lens', 'tripod',
+                'mouse', 'keyboard', 'usb', 'pendrive', 'hard disk', 'ssd',
+                'router', 'modem', 'wifi', 'network',
+                'electronic', 'gadget', 'device', 'digital', 'tech', 'technology'
             ]
         }
     }
     
     def __init__(self, use_transformers: bool = True, model_name: str = "facebook/bart-large-mnli"):
         """
-        Initialize the enhanced predictor.
+        Initialize the enhanced predictor with AI models.
         
         Args:
             use_transformers: Whether to use transformer models
@@ -101,31 +149,43 @@ class EnhancedCategoryPredictor:
         self.classifier = None
         self.embedder = None
         self.category_embeddings = None
+        self.model_status = {"classifier": False, "embedder": False}
+        
+        if not TRANSFORMERS_AVAILABLE:
+            print("⚠️  WARNING: transformers library not available!")
+            print("   Install with: pip install transformers torch")
+            self.use_transformers = False
         
         if self.use_transformers:
             try:
-                print("Loading zero-shot classification model...")
+                print("\n🤖 Loading AI Models for Category Prediction...")
+                print(f"   📦 Zero-shot classifier: {model_name}")
                 self.classifier = pipeline(
                     "zero-shot-classification",
                     model=model_name,
                     device=-1  # Use CPU (-1) or 0 for GPU
                 )
-                print("Model loaded successfully!")
+                self.model_status["classifier"] = True
+                print("   ✅ Zero-shot classifier loaded successfully!")
                 
                 # Try to load sentence transformer for semantic similarity
                 if SENTENCE_TRANSFORMERS_AVAILABLE:
                     try:
-                        print("Loading sentence transformer...")
+                        print("   📦 Sentence transformer: all-MiniLM-L6-v2")
                         self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
                         self._compute_category_embeddings()
-                        print("Sentence transformer loaded!")
+                        self.model_status["embedder"] = True
+                        print("   ✅ Sentence transformer loaded successfully!")
                     except Exception as e:
-                        print(f"Could not load sentence transformer: {e}")
+                        print(f"   ⚠️  Sentence transformer failed: {e}")
                         self.embedder = None
+                
+                print("\n🎯 AI-powered prediction ACTIVE\n")
                         
             except Exception as e:
-                print(f"Could not load transformer model: {e}")
-                print("Falling back to keyword-based prediction")
+                print(f"\n❌ ERROR: Could not load transformer model: {e}")
+                print("   Falling back to keyword-based prediction")
+                print("   Please check your internet connection and try again\n")
                 self.use_transformers = False
     
     def _compute_category_embeddings(self):
@@ -142,21 +202,47 @@ class EnhancedCategoryPredictor:
         if not text:
             return ""
         text = text.lower()
+        # Remove special characters but keep spaces
         text = re.sub(r'[^a-z0-9\s]', ' ', text)
+        # Normalize whitespace
         text = ' '.join(text.split())
         return text
+    
+    def _handle_plurals(self, word: str) -> List[str]:
+        """Generate common plural/singular variations of a word."""
+        variations = [word]
+        
+        # Handle common plural forms
+        if word.endswith('s'):
+            variations.append(word[:-1])  # Remove 's'
+        else:
+            variations.append(word + 's')  # Add 's'
+        
+        if word.endswith('ies'):
+            variations.append(word[:-3] + 'y')  # berry -> berries
+        elif word.endswith('es'):
+            variations.append(word[:-2])  # box -> boxes
+        elif word.endswith('y') and len(word) > 2:
+            variations.append(word[:-1] + 'ies')  # berry -> berries
+        
+        # Handle common variations
+        if word.endswith('ing'):
+            variations.append(word[:-3])  # cooking -> cook
+        
+        return list(set(variations))
     
     def _keyword_based_prediction(
         self, 
         description: str,
         available_categories: Optional[List[str]] = None
     ) -> Tuple[str, float]:
-        """Fallback keyword-based prediction."""
+        """Enhanced keyword-based prediction with plural handling and smart fallback."""
         if not description or not description.strip():
-            return ("Unknown", 0.0)
+            # Return Food as default for empty descriptions (most common donation)
+            return ("Food", 0.1)
         
         processed = self.preprocess_text(description)
-        tokens = set(processed.split())
+        tokens = processed.split()
         
         scores = {}
         categories = self.CATEGORIES.keys()
@@ -164,26 +250,60 @@ class EnhancedCategoryPredictor:
             categories = [c for c in categories if c in available_categories]
         
         for category in categories:
-            keywords = set(self.CATEGORIES[category]['keywords'])
-            # Count exact matches
-            matches = len(tokens & keywords)
-            # Check partial matches
-            partial = sum(
-                1 for token in tokens 
-                for keyword in keywords 
-                if keyword in token or token in keyword
-            )
-            scores[category] = matches * 3 + partial
+            keywords = self.CATEGORIES[category]['keywords']
+            category_score = 0
+            
+            for token in tokens:
+                # Generate variations (plurals, etc.)
+                token_variations = self._handle_plurals(token)
+                
+                for keyword in keywords:
+                    keyword_variations = self._handle_plurals(keyword)
+                    
+                    # Exact match (highest score)
+                    if token in keyword_variations or keyword in token_variations:
+                        category_score += 10
+                    # Substring match (medium score)
+                    elif any(kw in token for kw in keyword_variations) or any(tv in keyword for tv in token_variations):
+                        category_score += 5
+                    # Partial overlap (low score)
+                    elif len(token) > 3 and len(keyword) > 3:
+                        # Check for common characters (for typos)
+                        common = sum(1 for c in token if c in keyword)
+                        if common >= min(len(token), len(keyword)) * 0.7:
+                            category_score += 2
+            
+            scores[category] = category_score
         
+        # Even if no perfect matches, return the best category
         if not scores or max(scores.values()) == 0:
-            return ("Unknown", 0.0)
+            # Intelligent fallback: check description length and context
+            desc_lower = description.lower()
+            if any(word in desc_lower for word in ['tablet', 'capsule', 'mg', 'ml', 'dose']):
+                return ("Medicine", 0.3)
+            elif any(word in desc_lower for word in ['shirt', 'pant', 'wear', 'cloth']):
+                return ("Clothing", 0.3)
+            elif any(word in desc_lower for word in ['clean', 'wash', 'hygien']):
+                return ("Hygiene", 0.3)
+            elif any(word in desc_lower for word in ['write', 'draw', 'office', 'school']):
+                return ("Stationery", 0.3)
+            elif any(word in desc_lower for word in ['device', 'electronic', 'gadget', 'tech']):
+                return ("Electronics", 0.3)
+            else:
+                # Default to Food (most common donation category)
+                return ("Food", 0.2)
         
         best_category = max(scores, key=scores.get)
         max_score = scores[best_category]
         
-        # Normalize confidence
-        total_keywords = len(self.CATEGORIES[best_category]['keywords'])
-        confidence = min(max_score / (total_keywords * 0.5), 1.0)
+        # Smarter confidence calculation
+        # Higher base confidence, scaled by score
+        confidence = min(0.3 + (max_score / 50.0), 1.0)
+        
+        # Boost confidence if score is significantly higher than second best
+        sorted_scores = sorted(scores.values(), reverse=True)
+        if len(sorted_scores) > 1 and sorted_scores[0] > sorted_scores[1] * 2:
+            confidence = min(confidence * 1.2, 1.0)
         
         return (best_category, round(confidence, 2))
     
@@ -192,7 +312,7 @@ class EnhancedCategoryPredictor:
         description: str,
         available_categories: Optional[List[str]] = None
     ) -> Tuple[str, float]:
-        """Use transformer model for prediction."""
+        """Use transformer model for prediction with keyword validation."""
         if not self.classifier:
             return self._keyword_based_prediction(description, available_categories)
         
@@ -201,7 +321,7 @@ class EnhancedCategoryPredictor:
             categories = [c for c in categories if c in available_categories]
         
         if not categories:
-            return ("Unknown", 0.0)
+            return self._keyword_based_prediction(description, available_categories)
         
         try:
             # Use zero-shot classification
@@ -220,8 +340,13 @@ class EnhancedCategoryPredictor:
                 available_categories
             )
             
-            if keyword_cat == predicted_category and keyword_conf > 0.5:
-                confidence = min(confidence * 1.1, 1.0)  # 10% boost
+            if keyword_cat == predicted_category:
+                # Both methods agree - high confidence boost
+                confidence = min(confidence * 1.2, 1.0)
+            elif keyword_conf > 0.6:
+                # Keywords are very confident but transformer disagrees
+                # Trust keywords more for domain-specific terms
+                return (keyword_cat, round(min(keyword_conf * 0.9, confidence), 2))
             
             return (predicted_category, round(confidence, 2))
             
@@ -234,7 +359,7 @@ class EnhancedCategoryPredictor:
         description: str,
         available_categories: Optional[List[str]] = None
     ) -> Tuple[str, float]:
-        """Use semantic similarity for prediction."""
+        """Use semantic similarity for prediction with minimum threshold."""
         if not self.embedder or self.category_embeddings is None:
             return self._transformer_prediction(description, available_categories)
         
@@ -256,7 +381,7 @@ class EnhancedCategoryPredictor:
                         filtered_cats.append(cat)
                 
                 if not filtered_cats:
-                    return ("Unknown", 0.0)
+                    return self._keyword_based_prediction(description, available_categories)
                 
                 best_idx = filtered_sims.index(max(filtered_sims))
                 best_category = filtered_cats[best_idx]
@@ -265,6 +390,9 @@ class EnhancedCategoryPredictor:
                 best_idx = similarities.argmax().item()
                 best_category = categories[best_idx]
                 confidence = similarities[best_idx].item()
+            
+            # Ensure minimum confidence
+            confidence = max(confidence, 0.3)
             
             return (best_category, round(confidence, 2))
             
@@ -279,7 +407,7 @@ class EnhancedCategoryPredictor:
         method: str = "auto"
     ) -> Tuple[str, float]:
         """
-        Predict category for an item.
+        Predict category using AI models (transformer/semantic) with intelligent fallback.
         
         Args:
             description: Item description text
@@ -289,23 +417,54 @@ class EnhancedCategoryPredictor:
         Returns:
             Tuple of (predicted_category, confidence_score)
         """
+        # Use keyword-based for empty descriptions with default category
         if not description or not description.strip():
-            return ("Unknown", 0.0)
+            return ("Food", 0.15)  # Default to most common donation category
         
-        # Choose prediction method
-        if method == "keyword" or not self.use_transformers:
-            return self._keyword_based_prediction(description, available_categories)
+        # Choose prediction method - prioritize AI models
+        if method == "keyword":
+            # Explicitly requested keyword-only
+            result = self._keyword_based_prediction(description, available_categories)
         elif method == "transformer":
-            return self._transformer_prediction(description, available_categories)
-        elif method == "semantic" and self.embedder:
-            return self._semantic_similarity_prediction(description, available_categories)
-        else:  # auto
-            if self.embedder:
-                return self._semantic_similarity_prediction(description, available_categories)
-            elif self.classifier:
-                return self._transformer_prediction(description, available_categories)
+            # Explicitly requested transformer
+            if self.classifier:
+                result = self._transformer_prediction(description, available_categories)
             else:
-                return self._keyword_based_prediction(description, available_categories)
+                print("⚠️  Transformer not available, using keywords")
+                result = self._keyword_based_prediction(description, available_categories)
+        elif method == "semantic":
+            # Explicitly requested semantic
+            if self.embedder:
+                result = self._semantic_similarity_prediction(description, available_categories)
+            else:
+                print("⚠️  Semantic model not available, using transformer or keywords")
+                result = self._transformer_prediction(description, available_categories) if self.classifier else self._keyword_based_prediction(description, available_categories)
+        else:  # auto - use best available AI model
+            if self.embedder:
+                # Best: Semantic similarity
+                result = self._semantic_similarity_prediction(description, available_categories)
+            elif self.classifier:
+                # Good: Zero-shot transformer
+                result = self._transformer_prediction(description, available_categories)
+            else:
+                # Fallback: Enhanced keywords
+                result = self._keyword_based_prediction(description, available_categories)
+        
+        # Never return "Unknown" - always provide best guess
+        if result[0] == "Unknown" or result[1] < 0.1:
+            return self._keyword_based_prediction(description, available_categories)
+        
+        return result
+    
+    def get_model_status(self) -> dict:
+        """Get the current status of loaded models."""
+        return {
+            "transformers_available": TRANSFORMERS_AVAILABLE,
+            "sentence_transformers_available": SENTENCE_TRANSFORMERS_AVAILABLE,
+            "classifier_loaded": self.model_status.get("classifier", False),
+            "embedder_loaded": self.model_status.get("embedder", False),
+            "active_method": "semantic" if self.embedder else ("transformer" if self.classifier else "keyword")
+        }
     
     def get_category_suggestions(
         self,
@@ -393,18 +552,30 @@ def predict_item_category(
     method: str = "auto"
 ) -> Tuple[str, float]:
     """
-    Convenience function for category prediction.
+    Convenience function for AI-powered category prediction.
+    Uses transformer models when available, falls back to enhanced keywords.
     
     Args:
         description: Item description
         available_categories: List of valid categories
-        method: Prediction method
+        method: Prediction method (auto uses best available AI model)
         
     Returns:
         Tuple of (category, confidence)
     """
     pred = get_predictor()
     return pred.predict_category(description, available_categories, method)
+
+
+def get_model_status() -> dict:
+    """
+    Get status of loaded AI models.
+    
+    Returns:
+        Dictionary with model loading status and active prediction method
+    """
+    pred = get_predictor()
+    return pred.get_model_status()
 
 
 # Example usage

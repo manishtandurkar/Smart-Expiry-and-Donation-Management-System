@@ -146,7 +146,7 @@ class ExpiryChecker:
             'severity': alert.severity,
             'days_until_expiry': item.days_until_expiry,
             'quantity': item.quantity,
-            'category_name': item.category or 'Unknown',
+            'category_name': item.category or 'Food',
             'donor_id': item.donor_id,
             'donor_name': item.donor.name,
             'expiry_date': item.expiry_date.isoformat(),

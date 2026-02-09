@@ -38,3 +38,7 @@ dist-ssr/
 # Database
 *.db
 *.sqlite
+
+# MD files
+*.md
+!README.md

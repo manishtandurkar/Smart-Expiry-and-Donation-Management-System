@@ -172,7 +172,7 @@ class ItemSummary(BaseModel):
             expiry_date=item.expiry_date,
             days_until_expiry=item.days_until_expiry,
             expiry_status=item.expiry_status,
-            category_name=item.category if item.category else "Unknown"
+            category_name=item.category if item.category else "Food"
         )
     
     class Config:
