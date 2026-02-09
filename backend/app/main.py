@@ -3,6 +3,10 @@ FastAPI Main Application
 Smart Expiry and Donation Management System
 """
 
+import os
+# Suppress TensorFlow oneDNN warnings
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -13,6 +17,10 @@ from .config import settings
 from .database import init_db, close_db_connections, get_db
 from . import crud, schemas
 from .routers import donors, items, receivers, donations, alerts, admin, auth, requests
+from .tasks import run_expiry_check
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+import atexit
 
 # Configure logging
 logging.basicConfig(
@@ -20,6 +28,19 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Initialize scheduler
+scheduler = BackgroundScheduler()
+
+
+def scheduled_expiry_check():
+    """Run expiry check as a scheduled task."""
+    try:
+        logger.info("Running scheduled expiry check...")
+        result = run_expiry_check()
+        logger.info(f"Scheduled expiry check completed: {result}")
+    except Exception as e:
+        logger.error(f"Scheduled expiry check failed: {e}")
 
 
 @asynccontextmanager
@@ -36,10 +57,41 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"✗ Database initialization failed: {e}")
     
+    # Run initial expiry check on startup
+    try:
+        logger.info("Running initial expiry check...")
+        result = run_expiry_check()
+        logger.info(f"✓ Initial expiry check completed: {result}")
+    except Exception as e:
+        logger.error(f"✗ Initial expiry check failed: {e}")
+    
+    # Start scheduler for periodic expiry checks
+    try:
+        # Run expiry check every 6 hours
+        scheduler.add_job(
+            func=scheduled_expiry_check,
+            trigger=IntervalTrigger(hours=6),
+            id='expiry_check_job',
+            name='Check expiring items and generate alerts',
+            replace_existing=True
+        )
+        scheduler.start()
+        logger.info("✓ Scheduler started - expiry checks will run every 6 hours")
+        
+        # Shut down scheduler on exit
+        atexit.register(lambda: scheduler.shutdown())
+    except Exception as e:
+        logger.error(f"✗ Scheduler initialization failed: {e}")
+    
     yield
     
     # Shutdown
     logger.info("Shutting down application...")
+    try:
+        scheduler.shutdown(wait=False)
+        logger.info("✓ Scheduler stopped")
+    except:
+        pass
     close_db_connections()
     logger.info("✓ Application shutdown complete")
 

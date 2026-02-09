@@ -226,12 +226,13 @@ def get_alerts(
     if acknowledged is not None:
         query = query.filter(models.Alert.is_acknowledged == acknowledged)
 
-    # Keep only CRITICAL and HIGH severities and order CRITICAL first
-    query = query.filter(models.Alert.severity.in_(['CRITICAL', 'HIGH']))
+    # Include CRITICAL, HIGH, and MEDIUM severities and order by priority
+    query = query.filter(models.Alert.severity.in_(['CRITICAL', 'HIGH', 'MEDIUM']))
     severity_rank = case(
         (models.Alert.severity == 'CRITICAL', 1),
         (models.Alert.severity == 'HIGH', 2),
-        else_=3
+        (models.Alert.severity == 'MEDIUM', 3),
+        else_=4
     )
 
     return query.order_by(severity_rank, models.Alert.created_at.desc()).offset(skip).limit(limit).all()
@@ -253,6 +254,8 @@ def acknowledge_alert(db: Session, alert_id: int) -> Optional[models.Alert]:
 
 def get_dashboard_stats(db: Session) -> schemas.DashboardStats:
     """Get dashboard statistics."""
+    from .config import settings
+    
     total_items = db.query(func.count(models.Item.item_id)).scalar()
     total_donors = db.query(func.count(models.Donor.donor_id)).scalar()
     total_receivers = db.query(func.count(models.Receiver.receiver_id)).scalar()
@@ -261,7 +264,7 @@ def get_dashboard_stats(db: Session) -> schemas.DashboardStats:
         models.Alert.is_acknowledged == False
     ).scalar()
     
-    threshold_date = date.today() + timedelta(days=7)
+    threshold_date = date.today() + timedelta(days=settings.EXPIRY_CHECK_DAYS)
     expiring_soon = db.query(func.count(models.Item.item_id)).filter(
         and_(
             models.Item.expiry_date <= threshold_date,

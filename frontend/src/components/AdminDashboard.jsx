@@ -4,9 +4,9 @@ import { useToast } from './Toast';
 import Charts from './Charts';
 import './AdminDashboard.css';
 
-export default function Admin({ user, onLogout }) {
+export default function Admin({ user, onLogout, initialTab }) {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(initialTab || 'dashboard');
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [donors, setDonors] = useState([]);

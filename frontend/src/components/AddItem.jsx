@@ -208,8 +208,7 @@ function AddItem() {
           
           {prediction && (
             <div className="prediction-result">
-              <strong>Predicted:</strong> {prediction.predicted_category} 
-              (Confidence: {(prediction.confidence * 100).toFixed(0)}%)
+              <strong>Predicted:</strong> {prediction.predicted_category}
             </div>
           )}
         </div>

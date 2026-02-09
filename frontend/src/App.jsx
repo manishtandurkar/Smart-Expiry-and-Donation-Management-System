@@ -65,7 +65,8 @@ function App() {
         return (
           <AdminDashboard 
             user={user.user} 
-            onLogout={handleLogout} 
+            onLogout={handleLogout}
+            initialTab={user.initialTab}
           />
         );
       default:

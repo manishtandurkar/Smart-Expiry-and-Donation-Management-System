@@ -230,7 +230,7 @@ function DonorDashboard({ user, donorId, onLogout }) {
                   </select>
                   {prediction && (
                     <small className="prediction-info">
-                      AI predicted: {prediction.predicted_category} ({Math.round(prediction.confidence * 100)}% confidence)
+                      AI predicted: {prediction.predicted_category}
                     </small>
                   )}
                 </div>

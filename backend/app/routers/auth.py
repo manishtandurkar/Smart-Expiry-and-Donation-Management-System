@@ -81,10 +81,17 @@ def login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
             except Exception as e:
                 print(f"Error auto-creating receiver profile: {e}")
     
+    # For admin users, count pending donation requests
+    pending_requests_count = None
+    if user.role == 'admin':
+        pending_requests = crud.get_donation_requests(db, status='pending', limit=1000)
+        pending_requests_count = len(pending_requests)
+    
     return schemas.UserWithToken(
         user=user,
         donor_id=donor_id,
-        receiver_id=receiver_id
+        receiver_id=receiver_id,
+        pending_requests_count=pending_requests_count
     )
 
 

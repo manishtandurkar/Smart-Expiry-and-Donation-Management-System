@@ -8,6 +8,8 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPendingModal, setShowPendingModal] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
@@ -41,7 +43,13 @@ function Login({ onLogin }) {
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userRole', userData.user.role);
 
-      onLogin(userData);
+      // For admin, check if there are pending requests
+      if (userData.user.role === 'admin' && userData.pending_requests_count > 0) {
+        setPendingData(userData);
+        setShowPendingModal(true);
+      } else {
+        onLogin(userData);
+      }
     } catch (err) {
       let errorMsg = 'Invalid username or password';
       if (err.response?.data?.detail) {
@@ -170,6 +178,45 @@ function Login({ onLogin }) {
           {selectedRole === 'admin' && <code>admin / admin</code>}
         </div>
       </div>
+
+      {/* Pending Requests Modal */}
+      {showPendingModal && pendingData && (
+        <div className="modal-overlay" onClick={() => {
+          setShowPendingModal(false);
+          onLogin(pendingData);
+        }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🔔 Pending Donation Requests</h3>
+            </div>
+            <div className="modal-body">
+              <p>You have <strong>{pendingData.pending_requests_count}</strong> pending donation request{pendingData.pending_requests_count !== 1 ? 's' : ''} awaiting approval.</p>
+              <p>Would you like to review them now?</p>
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="modal-btn modal-btn-primary"
+                onClick={() => {
+                  setShowPendingModal(false);
+                  // Pass initialTab as 'requests' to open requests tab
+                  onLogin({ ...pendingData, initialTab: 'requests' });
+                }}
+              >
+                View Pending Requests
+              </button>
+              <button 
+                className="modal-btn modal-btn-secondary"
+                onClick={() => {
+                  setShowPendingModal(false);
+                  onLogin(pendingData);
+                }}
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

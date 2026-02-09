@@ -78,6 +78,7 @@ class UserWithToken(BaseModel):
     user: UserResponse
     donor_id: Optional[int] = None
     receiver_id: Optional[int] = None
+    pending_requests_count: Optional[int] = None
 
 
 # ============================================================================
