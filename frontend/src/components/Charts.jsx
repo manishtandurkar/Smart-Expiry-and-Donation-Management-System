@@ -252,7 +252,7 @@ export default function Charts() {
       },
       title: {
         display: true,
-        text: 'Top 5 Donors by Item Count',
+        text: 'Top Donors by Item Count',
         font: {
           size: 18,
           weight: 'bold',
